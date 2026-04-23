@@ -3,7 +3,6 @@ package com.productpool.backend.entity;
 import com.productpool.backend.util.IdGenerator;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -58,7 +57,7 @@ public class ConfigurationType {
     createdAt = LocalDateTime.now();
     updatedAt = LocalDateTime.now();
     if (sortOrder == null) {
-      sortOrder = (int) createdAt.toEpochSecond(ZoneOffset.UTC);
+      sortOrder = 0;
     }
   }
 
