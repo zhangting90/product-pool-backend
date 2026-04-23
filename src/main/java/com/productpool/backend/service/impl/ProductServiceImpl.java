@@ -17,13 +17,28 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 产品服务实现类
+ * <p>实现产品的创建、查询、更新、删除及多条件分页查询等业务逻辑，
+ * 包含编码唯一性校验和策略类型关联验证。</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
   private final StrategyTypeRepository strategyTypeRepository;
+  private final BenchmarkRepository benchmarkRepository;
 
+  /**
+   * 创建产品
+   * <p>校验编码唯一性和策略类型存在性后创建新产品，默认激活状态为true。</p>
+   *
+   * @param createDTO 创建产品的DTO
+   * @return 创建后的产品DTO
+   * @throws DuplicateResourceException 编码已存在时抛出
+   * @throws ResourceNotFoundException 策略类型不存在时抛出
+   */
   @Override
   @Transactional
   public ProductDTO create(ProductCreateDTO createDTO) {
@@ -41,7 +56,7 @@ public class ProductServiceImpl implements ProductService {
     Product entity = new Product();
     entity.setName(createDTO.getName());
     entity.setCode(createDTO.getCode());
-    entity.setStrategyType(strategyType);
+    entity.setStrategyTypeId(strategyType.getId());
     entity.setRiskLevel(createDTO.getRiskLevel());
     entity.setAnnualReturn(createDTO.getAnnualReturn());
     entity.setVolatility(createDTO.getVolatility());
@@ -58,6 +73,13 @@ public class ProductServiceImpl implements ProductService {
     return ProductDTO.fromEntity(saved);
   }
 
+  /**
+   * 根据ID查询产品
+   *
+   * @param id 产品ID
+   * @return 产品DTO
+   * @throws ResourceNotFoundException 产品不存在时抛出
+   */
   @Override
   public ProductDTO findById(Long id) {
     Product entity = productRepository
@@ -66,12 +88,26 @@ public class ProductServiceImpl implements ProductService {
     return ProductDTO.fromEntity(entity);
   }
 
+  /**
+   * 分页查询所有产品
+   *
+   * @param pageable 分页参数
+   * @return 产品分页结果
+   */
   @Override
   public Page<ProductDTO> findAll(Pageable pageable) {
     Page<Product> entities = productRepository.findAll(pageable);
     return entities.map(ProductDTO::fromEntity);
   }
 
+  /**
+   * 根据条件分页查询产品
+   * <p>支持按名称、编码、策略类型、风险等级、激活状态等多条件查询。</p>
+   *
+   * @param queryDTO 查询条件DTO
+   * @param pageable 分页参数
+   * @return 产品分页结果
+   */
   @Override
   public Page<ProductDTO> findByQuery(ProductQueryDTO queryDTO, Pageable pageable) {
     Page<Product> entities = productRepository.findByQuery(
@@ -84,6 +120,15 @@ public class ProductServiceImpl implements ProductService {
     return entities.map(ProductDTO::fromEntity);
   }
 
+  /**
+   * 更新产品
+   * <p>仅更新非null字段。</p>
+   *
+   * @param id 产品ID
+   * @param updateDTO 更新产品的DTO
+   * @return 更新后的产品DTO
+   * @throws ResourceNotFoundException 产品不存在时抛出
+   */
   @Override
   @Transactional
   public ProductDTO update(Long id, ProductUpdateDTO updateDTO) {
@@ -132,6 +177,12 @@ public class ProductServiceImpl implements ProductService {
     return ProductDTO.fromEntity(updated);
   }
 
+  /**
+   * 删除产品
+   *
+   * @param id 产品ID
+   * @throws ResourceNotFoundException 产品不存在时抛出
+   */
   @Override
   @Transactional
   public void delete(Long id) {
@@ -141,12 +192,25 @@ public class ProductServiceImpl implements ProductService {
     productRepository.delete(entity);
   }
 
+  /**
+   * 根据策略类型ID分页查询产品
+   *
+   * @param strategyTypeId 策略类型ID
+   * @param pageable 分页参数
+   * @return 产品分页结果
+   */
   @Override
   public Page<ProductDTO> findByStrategyTypeId(Long strategyTypeId, Pageable pageable) {
     Page<Product> entities = productRepository.findByStrategyTypeId(strategyTypeId, pageable);
     return entities.map(ProductDTO::fromEntity);
   }
 
+  /**
+   * 分页查询所有激活状态的产品
+   *
+   * @param pageable 分页参数
+   * @return 激活产品分页结果，按排序字段升序排列
+   */
   @Override
   public Page<ProductDTO> findActiveProducts(Pageable pageable) {
     Page<Product> entities = productRepository.findByIsActiveTrueOrderBySortOrderAsc(pageable);

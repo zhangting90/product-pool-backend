@@ -7,6 +7,10 @@ import com.productpool.backend.dto.BenchmarkUpdateDTO;
 
 import java.util.List;
 
+/**
+ * 业绩对标服务接口
+ * <p>定义业绩对标的增删改查及按配置类型查询等业务方法。</p>
+ */
 public interface BenchmarkService {
 
   /**

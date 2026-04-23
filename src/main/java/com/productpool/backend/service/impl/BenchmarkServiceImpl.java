@@ -19,13 +19,28 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 业绩对标服务实现类
+ * <p>实现业绩对标的创建、查询、更新、删除等业务逻辑，
+ * 包含编码唯一性校验和级联删除检查。</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class BenchmarkServiceImpl implements BenchmarkService {
 
     private final BenchmarkRepository benchmarkRepository;
     private final ConfigurationTypeRepository configurationTypeRepository;
+    private final StrategyTypeRepository strategyTypeRepository;
 
+    /**
+     * 创建业绩对标
+     * <p>校验编码唯一性和配置类型存在性后创建新业绩对标。</p>
+     *
+     * @param createDTO 创建业绩对标的DTO
+     * @return 创建后的业绩对标DTO
+     * @throws DuplicateResourceException 编码已存在时抛出
+     * @throws ResourceNotFoundException 配置类型不存在时抛出
+     */
     @Override
     @Transactional
     public BenchmarkDTO create(BenchmarkCreateDTO createDTO) {
@@ -44,13 +59,20 @@ public class BenchmarkServiceImpl implements BenchmarkService {
         entity.setName(createDTO.getName());
         entity.setCode(createDTO.getCode());
         entity.setDescription(createDTO.getDescription());
-        entity.setConfigurationType(configurationType);
+        entity.setConfigurationTypeId(configurationType.getId());
         entity.setSortOrder(createDTO.getSortOrder());
 
         Benchmark saved = benchmarkRepository.save(entity);
         return BenchmarkDTO.fromEntity(saved);
     }
 
+    /**
+     * 根据ID查询业绩对标
+     *
+     * @param id 业绩对标ID
+     * @return 业绩对标DTO
+     * @throws ResourceNotFoundException 业绩对标不存在时抛出
+     */
     @Override
     public BenchmarkDTO findById(Long id) {
         Benchmark entity = benchmarkRepository
@@ -59,6 +81,11 @@ public class BenchmarkServiceImpl implements BenchmarkService {
         return BenchmarkDTO.fromEntity(entity);
     }
 
+    /**
+     * 查询所有业绩对标
+     *
+     * @return 业绩对标DTO列表
+     */
     @Override
     public List<BenchmarkDTO> findAll() {
         List<Benchmark> entities = benchmarkRepository.findAll();
@@ -67,6 +94,13 @@ public class BenchmarkServiceImpl implements BenchmarkService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 根据条件查询业绩对标
+     * <p>支持按配置类型ID或编码进行条件查询。</p>
+     *
+     * @param queryDTO 查询条件DTO
+     * @return 业绩对标DTO列表
+     */
     @Override
     public List<BenchmarkDTO> findByQuery(BenchmarkQueryDTO queryDTO) {
         List<Benchmark> entities;
@@ -87,6 +121,15 @@ public class BenchmarkServiceImpl implements BenchmarkService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 更新业绩对标
+     * <p>仅更新非null字段（名称、描述、排序）。</p>
+     *
+     * @param id 业绩对标ID
+     * @param updateDTO 更新业绩对标的DTO
+     * @return 更新后的业绩对标DTO
+     * @throws ResourceNotFoundException 业绩对标不存在时抛出
+     */
     @Override
     @Transactional
     public BenchmarkDTO update(Long id, BenchmarkUpdateDTO updateDTO) {
@@ -108,6 +151,14 @@ public class BenchmarkServiceImpl implements BenchmarkService {
         return BenchmarkDTO.fromEntity(updated);
     }
 
+    /**
+     * 删除业绩对标
+     * <p>删除前检查是否有关联的策略类型，存在则阻止删除。</p>
+     *
+     * @param id 业绩对标ID
+     * @throws ResourceNotFoundException 业绩对标不存在时抛出
+     * @throws BusinessLogicException 存在关联策略类型时抛出
+     */
     @Override
     @Transactional
     public void delete(Long id) {
@@ -116,7 +167,7 @@ public class BenchmarkServiceImpl implements BenchmarkService {
                 .orElseThrow(() -> new ResourceNotFoundException("Benchmark", id));
 
         // 检查是否有关联的策略类型
-        if (!entity.getStrategyTypes().isEmpty()) {
+        if (strategyTypeRepository.existsByBenchmarkId(id)) {
             throw new BusinessLogicException(
                     "Cannot delete benchmark with associated strategy types. Please delete strategy types first.");
         }
@@ -124,6 +175,12 @@ public class BenchmarkServiceImpl implements BenchmarkService {
         benchmarkRepository.delete(entity);
     }
 
+    /**
+     * 根据配置类型ID查询业绩对标
+     *
+     * @param configurationTypeId 配置类型ID
+     * @return 业绩对标DTO列表，按排序字段升序排列
+     */
     @Override
     public List<BenchmarkDTO> findByConfigurationTypeId(Long configurationTypeId) {
         List<Benchmark> entities = benchmarkRepository

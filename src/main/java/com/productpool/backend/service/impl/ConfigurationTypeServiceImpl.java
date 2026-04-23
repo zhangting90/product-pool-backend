@@ -8,6 +8,7 @@ import com.productpool.backend.entity.ConfigurationType;
 import com.productpool.backend.exception.BusinessLogicException;
 import com.productpool.backend.exception.DuplicateResourceException;
 import com.productpool.backend.exception.ResourceNotFoundException;
+import com.productpool.backend.repository.BenchmarkRepository;
 import com.productpool.backend.repository.ConfigurationTypeRepository;
 import com.productpool.backend.service.ConfigurationTypeService;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +18,27 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 配置类型服务实现类
+ * <p>实现配置类型的创建、查询、更新、删除及层级结构组装等业务逻辑。</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
 
     private final ConfigurationTypeRepository configurationTypeRepository;
+    private final BenchmarkRepository benchmarkRepository;
 
+    /**
+     * 创建配置类型
+     * <p>校验编码唯一性，验证父子分类关系后创建新配置类型。</p>
+     *
+     * @param createDTO 创建配置类型的DTO
+     * @return 创建后的配置类型DTO
+     * @throws DuplicateResourceException 编码已存在时抛出
+     * @throws ResourceNotFoundException 父分类不存在时抛出
+     * @throws BusinessLogicException 分类关系不合法时抛出
+     */
     @Override
     @Transactional
     public ConfigurationTypeDTO create(ConfigurationTypeCreateDTO createDTO) {
@@ -58,6 +74,13 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
         return ConfigurationTypeDTO.fromEntity(saved);
     }
 
+    /**
+     * 根据ID查询配置类型
+     *
+     * @param id 配置类型ID
+     * @return 配置类型DTO
+     * @throws ResourceNotFoundException 配置类型不存在时抛出
+     */
     @Override
     public ConfigurationTypeDTO findById(Long id) {
         ConfigurationType entity = configurationTypeRepository
@@ -66,6 +89,11 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
         return ConfigurationTypeDTO.fromEntity(entity);
     }
 
+    /**
+     * 查询所有配置类型
+     *
+     * @return 配置类型DTO列表
+     */
     @Override
     public List<ConfigurationTypeDTO> findAll() {
         List<ConfigurationType> entities = configurationTypeRepository.findAll();
@@ -74,6 +102,13 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 根据条件查询配置类型
+     * <p>支持按是否大分类、父分类ID、编码等条件查询。</p>
+     *
+     * @param queryDTO 查询条件DTO
+     * @return 配置类型DTO列表
+     */
     @Override
     public List<ConfigurationTypeDTO> findByQuery(ConfigurationTypeQueryDTO queryDTO) {
         List<ConfigurationType> entities;
@@ -95,6 +130,15 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 更新配置类型
+     * <p>仅更新非null字段（名称、描述、排序）。</p>
+     *
+     * @param id 配置类型ID
+     * @param updateDTO 更新配置类型的DTO
+     * @return 更新后的配置类型DTO
+     * @throws ResourceNotFoundException 配置类型不存在时抛出
+     */
     @Override
     @Transactional
     public ConfigurationTypeDTO update(Long id, ConfigurationTypeUpdateDTO updateDTO) {
@@ -116,6 +160,14 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
         return ConfigurationTypeDTO.fromEntity(updated);
     }
 
+    /**
+     * 删除配置类型
+     * <p>删除前检查是否存在子分类和关联的业绩对标，存在则阻止删除。</p>
+     *
+     * @param id 配置类型ID
+     * @throws ResourceNotFoundException 配置类型不存在时抛出
+     * @throws BusinessLogicException 存在子分类或关联业绩对标时抛出
+     */
     @Override
     @Transactional
     public void delete(Long id) {
@@ -132,7 +184,7 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
         }
 
         // 检查是否有关联的业绩对标
-        if (!entity.getBenchmarks().isEmpty()) {
+        if (benchmarkRepository.existsByConfigurationTypeId(id)) {
             throw new BusinessLogicException(
                     "Cannot delete configuration type with associated benchmarks. Please delete benchmarks first.");
         }
@@ -140,6 +192,11 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
         configurationTypeRepository.delete(entity);
     }
 
+    /**
+     * 查询所有大分类及其子分类的层级结构
+     *
+     * @return 大分类列表，每个大分类包含其子分类
+     */
     @Override
     public List<ConfigurationTypeDTO> findMajorTypesWithSubTypes() {
         List<ConfigurationType> majorTypes = configurationTypeRepository.findMajorTypesWithSubTypes();
@@ -161,6 +218,12 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 根据父分类ID查询子分类
+     *
+     * @param parentId 父分类ID
+     * @return 子分类列表，按排序字段升序排列
+     */
     @Override
     public List<ConfigurationTypeDTO> findByParentId(Long parentId) {
         List<ConfigurationType> entities = configurationTypeRepository
@@ -170,6 +233,11 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 查询所有大分类
+     *
+     * @return 大分类列表，按排序字段升序排列
+     */
     @Override
     public List<ConfigurationTypeDTO> findMajorTypes() {
         List<ConfigurationType> entities = configurationTypeRepository.findByIsMajorTrueOrderBySortOrderAsc();

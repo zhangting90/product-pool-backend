@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 基准管理控制器
+ * 提供基准的增删改查 API 接口，支持按配置类型筛选
+ * 基础路径: /api/v1/benchmarks
+ */
 @RestController
 @RequestMapping("/api/v1/benchmarks")
 @RequiredArgsConstructor
@@ -21,6 +26,7 @@ public class BenchmarkController {
 
   private final BenchmarkService benchmarkService;
 
+  /** 创建基准 POST /api/v1/benchmarks */
   @PostMapping
   public ResponseEntity<Result<BenchmarkDTO>> create(
       @Valid @RequestBody BenchmarkCreateDTO createDTO) {
@@ -30,12 +36,14 @@ public class BenchmarkController {
         .body(Result.success(dto));
   }
 
+  /** 根据ID查询基准 GET /api/v1/benchmarks/{id} */
   @GetMapping("/{id}")
   public ResponseEntity<Result<BenchmarkDTO>> findById(@PathVariable Long id) {
     BenchmarkDTO dto = benchmarkService.findById(id);
     return ResponseEntity.ok(Result.success(dto));
   }
 
+  /** 查询所有基准，支持按配置类型ID和编码筛选 GET /api/v1/benchmarks */
   @GetMapping
   public ResponseEntity<Result<List<BenchmarkDTO>>> findAll(
       @RequestParam(required = false) Long configurationTypeId,
@@ -49,6 +57,7 @@ public class BenchmarkController {
     return ResponseEntity.ok(Result.success(result));
   }
 
+  /** 更新基准 PUT /api/v1/benchmarks/{id} */
   @PutMapping("/{id}")
   public ResponseEntity<Result<BenchmarkDTO>> update(
       @PathVariable Long id,
@@ -57,12 +66,14 @@ public class BenchmarkController {
     return ResponseEntity.ok(Result.success(dto));
   }
 
+  /** 删除基准 DELETE /api/v1/benchmarks/{id} */
   @DeleteMapping("/{id}")
   public ResponseEntity<Result<Void>> delete(@PathVariable Long id) {
     benchmarkService.delete(id);
     return ResponseEntity.noContent().build();
   }
 
+  /** 根据配置类型ID查询基准列表 GET /api/v1/benchmarks/configuration-types/{configurationTypeId} */
   @GetMapping("/configuration-types/{configurationTypeId}")
   public ResponseEntity<Result<List<BenchmarkDTO>>> findByConfigurationTypeId(
       @PathVariable Long configurationTypeId) {

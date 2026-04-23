@@ -26,3 +26,5 @@ buildNumber.properties
 *.log
 
 .env.example
+
+nul
