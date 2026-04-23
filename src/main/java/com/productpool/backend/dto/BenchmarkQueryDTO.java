@@ -4,10 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * 基准指标查询请求DTO
- * 用于接收前端查询基准指标列表时的筛选条件
- */
+/** 基准指标查询请求DTO 用于接收前端查询基准指标列表时的筛选条件 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

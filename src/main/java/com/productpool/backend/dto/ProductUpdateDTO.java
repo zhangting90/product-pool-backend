@@ -4,17 +4,13 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-/**
- * 产品更新请求DTO
- * 用于接收前端更新产品时的请求参数
- */
+/** 产品更新请求DTO 用于接收前端更新产品时的请求参数 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

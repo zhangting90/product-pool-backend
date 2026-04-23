@@ -7,10 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * 配置类型创建请求DTO
- * 用于接收前端创建配置类型时的请求参数
- */
+/** 配置类型创建请求DTO 用于接收前端创建配置类型时的请求参数 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

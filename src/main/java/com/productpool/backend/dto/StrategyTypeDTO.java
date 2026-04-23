@@ -1,17 +1,13 @@
 package com.productpool.backend.dto;
 
 import com.productpool.backend.entity.StrategyType;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-/**
- * 策略类型响应DTO
- * 用于返回策略类型的完整信息，包含关联的产品列表
- */
+/** 策略类型响应DTO 用于返回策略类型的完整信息，包含关联的产品列表 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

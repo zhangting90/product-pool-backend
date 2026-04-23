@@ -2,17 +2,12 @@ package com.productpool.backend.entity;
 
 import com.productpool.backend.util.IdGenerator;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
-/**
- * 策略类型实体类
- * 对应数据库表 strategy_type，用于管理策略分类
- * 关联到业绩对标，一个业绩对标下可有多个策略类型
- */
+/** 策略类型实体类 对应数据库表 strategy_type，用于管理策略分类 关联到业绩对标，一个业绩对标下可有多个策略类型 */
 @Entity
 @Table(name = "strategy_type")
 @Data

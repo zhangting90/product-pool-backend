@@ -3,23 +3,17 @@ package com.productpool.backend.entity;
 import com.productpool.backend.util.IdGenerator;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-/**
- * 产品实体类
- * 对应数据库表 product，用于管理产品信息
- * 关联到策略类型，一个策略类型下可有多个产品
- * 包含产品的业绩指标（年化收益、波动率、夏普比率、最大回撤等）
- */
+/** 产品实体类 对应数据库表 product，用于管理产品信息 关联到策略类型，一个策略类型下可有多个产品 包含产品的业绩指标（年化收益、波动率、夏普比率、最大回撤等） */
 @Entity
-@Table(name = "product", uniqueConstraints = {
-  @UniqueConstraint(name = "uk_product_code", columnNames = "code")
-})
+@Table(
+    name = "product",
+    uniqueConstraints = {@UniqueConstraint(name = "uk_product_code", columnNames = "code")})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

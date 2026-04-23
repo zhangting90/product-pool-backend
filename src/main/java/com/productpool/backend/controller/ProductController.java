@@ -17,11 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 产品管理控制器
- * 提供产品的增删改查 API 接口，支持分页、搜索及多条件筛选
- * 基础路径: /api/v1/products
- */
+/** 产品管理控制器 提供产品的增删改查 API 接口，支持分页、搜索及多条件筛选 基础路径: /api/v1/products */
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
@@ -31,12 +27,9 @@ public class ProductController {
 
   /** 创建产品 POST /api/v1/products */
   @PostMapping
-  public ResponseEntity<Result<ProductDTO>> create(
-      @Valid @RequestBody ProductCreateDTO createDTO) {
+  public ResponseEntity<Result<ProductDTO>> create(@Valid @RequestBody ProductCreateDTO createDTO) {
     ProductDTO dto = productService.create(createDTO);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(Result.success(dto));
+    return ResponseEntity.status(HttpStatus.CREATED).body(Result.success(dto));
   }
 
   /** 根据ID查询产品 GET /api/v1/products/{id} */
@@ -54,9 +47,10 @@ public class ProductController {
       @RequestParam(defaultValue = "id") String sortBy,
       @RequestParam(defaultValue = "asc") String sortDir) {
 
-    Sort sort = sortDir.equalsIgnoreCase("desc") ?
-        Sort.by(sortBy).descending() :
-        Sort.by(sortBy).ascending();
+    Sort sort =
+        sortDir.equalsIgnoreCase("desc")
+            ? Sort.by(sortBy).descending()
+            : Sort.by(sortBy).ascending();
 
     Pageable pageable = PageRequest.of(page, size, sort);
     Page<ProductDTO> result = productService.findAll(pageable);
@@ -91,8 +85,7 @@ public class ProductController {
   /** 更新产品 PUT /api/v1/products/{id} */
   @PutMapping("/{id}")
   public ResponseEntity<Result<ProductDTO>> update(
-      @PathVariable Long id,
-      @Valid @RequestBody ProductUpdateDTO updateDTO) {
+      @PathVariable Long id, @Valid @RequestBody ProductUpdateDTO updateDTO) {
     ProductDTO dto = productService.update(id, updateDTO);
     return ResponseEntity.ok(Result.success(dto));
   }
@@ -120,8 +113,7 @@ public class ProductController {
   /** 分页查询活跃状态的产品 GET /api/v1/products/active */
   @GetMapping("/active")
   public ResponseEntity<Result<PageResult<ProductDTO>>> findActiveProducts(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
     Pageable pageable = PageRequest.of(page, size, Sort.by("sortOrder").ascending());
     Page<ProductDTO> result = productService.findActiveProducts(pageable);

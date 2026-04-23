@@ -4,12 +4,12 @@ import com.productpool.backend.dto.StrategyTypeCreateDTO;
 import com.productpool.backend.dto.StrategyTypeDTO;
 import com.productpool.backend.dto.StrategyTypeQueryDTO;
 import com.productpool.backend.dto.StrategyTypeUpdateDTO;
-
 import java.util.List;
 
 /**
  * 策略类型服务接口
- * <p>定义策略类型的增删改查及按业绩对标查询等业务方法。</p>
+ *
+ * <p>定义策略类型的增删改查及按业绩对标查询等业务方法。
  */
 public interface StrategyTypeService {
 

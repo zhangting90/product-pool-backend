@@ -2,17 +2,12 @@ package com.productpool.backend.entity;
 
 import com.productpool.backend.util.IdGenerator;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
-/**
- * 配置类型实体类
- * 对应数据库表 configuration_type，用于管理产品分类体系中的配置类型层级
- * 支持大分类和小分类的树形结构，通过 parentId 建立父子关系
- */
+/** 配置类型实体类 对应数据库表 configuration_type，用于管理产品分类体系中的配置类型层级 支持大分类和小分类的树形结构，通过 parentId 建立父子关系 */
 @Entity
 @Table(name = "configuration_type")
 @Data

@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 产品服务实现类
- * <p>实现产品的创建、查询、更新、删除及多条件分页查询等业务逻辑，
- * 包含编码唯一性校验和策略类型关联验证。</p>
+ *
+ * <p>实现产品的创建、查询、更新、删除及多条件分页查询等业务逻辑， 包含编码唯一性校验和策略类型关联验证。
  */
 @Service
 @RequiredArgsConstructor
@@ -32,7 +32,8 @@ public class ProductServiceImpl implements ProductService {
 
   /**
    * 创建产品
-   * <p>校验编码唯一性和策略类型存在性后创建新产品，默认激活状态为true。</p>
+   *
+   * <p>校验编码唯一性和策略类型存在性后创建新产品，默认激活状态为true。
    *
    * @param createDTO 创建产品的DTO
    * @return 创建后的产品DTO
@@ -44,14 +45,15 @@ public class ProductServiceImpl implements ProductService {
   public ProductDTO create(ProductCreateDTO createDTO) {
     // 检查code是否已存在
     if (productRepository.existsByCode(createDTO.getCode())) {
-      throw new DuplicateResourceException(
-          "Product", "code", createDTO.getCode());
+      throw new DuplicateResourceException("Product", "code", createDTO.getCode());
     }
 
     // 验证策略类型是否存在
-    StrategyType strategyType = strategyTypeRepository
-        .findById(createDTO.getStrategyTypeId())
-        .orElseThrow(() -> new ResourceNotFoundException("StrategyType", createDTO.getStrategyTypeId()));
+    StrategyType strategyType =
+        strategyTypeRepository
+            .findById(createDTO.getStrategyTypeId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("StrategyType", createDTO.getStrategyTypeId()));
 
     Product entity = new Product();
     entity.setName(createDTO.getName());
@@ -82,9 +84,10 @@ public class ProductServiceImpl implements ProductService {
    */
   @Override
   public ProductDTO findById(Long id) {
-    Product entity = productRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+    Product entity =
+        productRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", id));
     return ProductDTO.fromEntity(entity);
   }
 
@@ -102,7 +105,8 @@ public class ProductServiceImpl implements ProductService {
 
   /**
    * 根据条件分页查询产品
-   * <p>支持按名称、编码、策略类型、风险等级、激活状态等多条件查询。</p>
+   *
+   * <p>支持按名称、编码、策略类型、风险等级、激活状态等多条件查询。
    *
    * @param queryDTO 查询条件DTO
    * @param pageable 分页参数
@@ -110,19 +114,21 @@ public class ProductServiceImpl implements ProductService {
    */
   @Override
   public Page<ProductDTO> findByQuery(ProductQueryDTO queryDTO, Pageable pageable) {
-    Page<Product> entities = productRepository.findByQuery(
-        queryDTO.getName(),
-        queryDTO.getCode(),
-        queryDTO.getStrategyTypeId(),
-        queryDTO.getRiskLevel(),
-        queryDTO.getIsActive(),
-        pageable);
+    Page<Product> entities =
+        productRepository.findByQuery(
+            queryDTO.getName(),
+            queryDTO.getCode(),
+            queryDTO.getStrategyTypeId(),
+            queryDTO.getRiskLevel(),
+            queryDTO.getIsActive(),
+            pageable);
     return entities.map(ProductDTO::fromEntity);
   }
 
   /**
    * 更新产品
-   * <p>仅更新非null字段。</p>
+   *
+   * <p>仅更新非null字段。
    *
    * @param id 产品ID
    * @param updateDTO 更新产品的DTO
@@ -132,9 +138,10 @@ public class ProductServiceImpl implements ProductService {
   @Override
   @Transactional
   public ProductDTO update(Long id, ProductUpdateDTO updateDTO) {
-    Product entity = productRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+    Product entity =
+        productRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", id));
 
     if (updateDTO.getName() != null) {
       entity.setName(updateDTO.getName());
@@ -186,9 +193,10 @@ public class ProductServiceImpl implements ProductService {
   @Override
   @Transactional
   public void delete(Long id) {
-    Product entity = productRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+    Product entity =
+        productRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", id));
     productRepository.delete(entity);
   }
 

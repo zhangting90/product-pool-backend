@@ -4,12 +4,12 @@ import com.productpool.backend.dto.ConfigurationTypeCreateDTO;
 import com.productpool.backend.dto.ConfigurationTypeDTO;
 import com.productpool.backend.dto.ConfigurationTypeQueryDTO;
 import com.productpool.backend.dto.ConfigurationTypeUpdateDTO;
-
 import java.util.List;
 
 /**
  * 配置类型服务接口
- * <p>定义配置类型的增删改查及层级结构查询等业务方法。</p>
+ *
+ * <p>定义配置类型的增删改查及层级结构查询等业务方法。
  */
 public interface ConfigurationTypeService {
 

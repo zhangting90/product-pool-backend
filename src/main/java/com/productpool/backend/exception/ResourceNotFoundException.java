@@ -1,9 +1,6 @@
 package com.productpool.backend.exception;
 
-/**
- * 资源未找到异常
- * 当查询的资源在数据库中不存在时抛出此异常
- */
+/** 资源未找到异常 当查询的资源在数据库中不存在时抛出此异常 */
 public class ResourceNotFoundException extends RuntimeException {
 
   /** 根据自定义消息构造异常 */

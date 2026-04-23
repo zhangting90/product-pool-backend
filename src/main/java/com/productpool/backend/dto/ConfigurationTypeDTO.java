@@ -1,17 +1,13 @@
 package com.productpool.backend.dto;
 
 import com.productpool.backend.entity.ConfigurationType;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-/**
- * 配置类型响应DTO
- * 用于返回配置类型的完整信息，包含关联的基准指标和子类型列表
- */
+/** 配置类型响应DTO 用于返回配置类型的完整信息，包含关联的基准指标和子类型列表 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

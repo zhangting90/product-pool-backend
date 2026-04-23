@@ -1,17 +1,13 @@
 package com.productpool.backend.dto;
 
 import com.productpool.backend.entity.Benchmark;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-/**
- * 基准指标响应DTO
- * 用于返回基准指标的完整信息，包含关联的策略类型列表
- */
+/** 基准指标响应DTO 用于返回基准指标的完整信息，包含关联的策略类型列表 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,15 +1,15 @@
 package com.productpool.backend.repository;
 
 import com.productpool.backend.entity.Benchmark;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
 /**
  * 业绩对标数据访问层
- * <p>提供业绩对标的基本数据访问操作，包括按编码、按配置类型查询等。</p>
+ *
+ * <p>提供业绩对标的基本数据访问操作，包括按编码、按配置类型查询等。
  */
 @Repository
 public interface BenchmarkRepository extends JpaRepository<Benchmark, Long> {

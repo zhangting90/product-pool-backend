@@ -7,18 +7,13 @@ import com.productpool.backend.dto.BenchmarkUpdateDTO;
 import com.productpool.backend.dto.Result;
 import com.productpool.backend.service.BenchmarkService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-/**
- * 基准管理控制器
- * 提供基准的增删改查 API 接口，支持按配置类型筛选
- * 基础路径: /api/v1/benchmarks
- */
+/** 基准管理控制器 提供基准的增删改查 API 接口，支持按配置类型筛选 基础路径: /api/v1/benchmarks */
 @RestController
 @RequestMapping("/api/v1/benchmarks")
 @RequiredArgsConstructor
@@ -31,9 +26,7 @@ public class BenchmarkController {
   public ResponseEntity<Result<BenchmarkDTO>> create(
       @Valid @RequestBody BenchmarkCreateDTO createDTO) {
     BenchmarkDTO dto = benchmarkService.create(createDTO);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(Result.success(dto));
+    return ResponseEntity.status(HttpStatus.CREATED).body(Result.success(dto));
   }
 
   /** 根据ID查询基准 GET /api/v1/benchmarks/{id} */
@@ -60,8 +53,7 @@ public class BenchmarkController {
   /** 更新基准 PUT /api/v1/benchmarks/{id} */
   @PutMapping("/{id}")
   public ResponseEntity<Result<BenchmarkDTO>> update(
-      @PathVariable Long id,
-      @Valid @RequestBody BenchmarkUpdateDTO updateDTO) {
+      @PathVariable Long id, @Valid @RequestBody BenchmarkUpdateDTO updateDTO) {
     BenchmarkDTO dto = benchmarkService.update(id, updateDTO);
     return ResponseEntity.ok(Result.success(dto));
   }

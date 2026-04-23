@@ -7,10 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * 策略类型创建请求DTO
- * 用于接收前端创建策略类型时的请求参数
- */
+/** 策略类型创建请求DTO 用于接收前端创建策略类型时的请求参数 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

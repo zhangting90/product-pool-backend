@@ -4,10 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * 配置类型查询请求DTO
- * 用于接收前端查询配置类型列表时的筛选条件
- */
+/** 配置类型查询请求DTO 用于接收前端查询配置类型列表时的筛选条件 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

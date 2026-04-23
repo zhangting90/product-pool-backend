@@ -1,24 +1,15 @@
 package com.productpool.backend.controller;
 
-import com.productpool.backend.dto.ConfigurationTypeCreateDTO;
-import com.productpool.backend.dto.ConfigurationTypeDTO;
-import com.productpool.backend.dto.ConfigurationTypeQueryDTO;
-import com.productpool.backend.dto.ConfigurationTypeUpdateDTO;
-import com.productpool.backend.dto.Result;
+import com.productpool.backend.dto.*;
 import com.productpool.backend.service.ConfigurationTypeService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-/**
- * 配置类型管理控制器
- * 提供配置类型的增删改查 API 接口，支持层级结构查询
- * 基础路径: /api/v1/configuration-types
- */
+/** 配置类型管理控制器 提供配置类型的增删改查 API 接口，支持层级结构查询 基础路径: /api/v1/configuration-types */
 @RestController
 @RequestMapping("/api/v1/configuration-types")
 @RequiredArgsConstructor
@@ -31,9 +22,7 @@ public class ConfigurationTypeController {
   public ResponseEntity<Result<ConfigurationTypeDTO>> create(
       @Valid @RequestBody ConfigurationTypeCreateDTO createDTO) {
     ConfigurationTypeDTO dto = configurationTypeService.create(createDTO);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(Result.success(dto));
+    return ResponseEntity.status(HttpStatus.CREATED).body(Result.success(dto));
   }
 
   /** 根据ID查询配置类型 GET /api/v1/configuration-types/{id} */
@@ -62,8 +51,7 @@ public class ConfigurationTypeController {
   /** 更新配置类型 PUT /api/v1/configuration-types/{id} */
   @PutMapping("/{id}")
   public ResponseEntity<Result<ConfigurationTypeDTO>> update(
-      @PathVariable Long id,
-      @Valid @RequestBody ConfigurationTypeUpdateDTO updateDTO) {
+      @PathVariable Long id, @Valid @RequestBody ConfigurationTypeUpdateDTO updateDTO) {
     ConfigurationTypeDTO dto = configurationTypeService.update(id, updateDTO);
     return ResponseEntity.ok(Result.success(dto));
   }
@@ -84,7 +72,8 @@ public class ConfigurationTypeController {
 
   /** 根据父级ID查询子配置类型 GET /api/v1/configuration-types/{parentId}/children */
   @GetMapping("/{parentId}/children")
-  public ResponseEntity<Result<List<ConfigurationTypeDTO>>> getChildren(@PathVariable Long parentId) {
+  public ResponseEntity<Result<List<ConfigurationTypeDTO>>> getChildren(
+      @PathVariable Long parentId) {
     List<ConfigurationTypeDTO> result = configurationTypeService.findByParentId(parentId);
     return ResponseEntity.ok(Result.success(result));
   }

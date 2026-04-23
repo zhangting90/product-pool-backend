@@ -3,6 +3,9 @@ package com.productpool.backend.exception;
 import com.productpool.backend.dto.Result;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -17,14 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-/**
- * 全局异常处理器
- * 统一捕获和处理所有 Controller 层抛出的异常，返回标准格式的错误响应
- */
+/** 全局异常处理器 统一捕获和处理所有 Controller 层抛出的异常，返回标准格式的错误响应 */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -56,43 +52,52 @@ public class GlobalExceptionHandler {
   /** 处理请求参数校验异常（@Valid 触发），收集所有字段错误信息 */
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public Result<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+  public Result<Map<String, String>> handleMethodArgumentNotValidException(
+      MethodArgumentNotValidException ex) {
     log.warn("Validation error: {}", ex.getMessage());
     Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getAllErrors().forEach(error -> {
-      String fieldName = ((FieldError) error).getField();
-      String errorMessage = error.getDefaultMessage();
-      errors.put(fieldName, errorMessage);
-    });
+    ex.getBindingResult()
+        .getAllErrors()
+        .forEach(
+            error -> {
+              String fieldName = ((FieldError) error).getField();
+              String errorMessage = error.getDefaultMessage();
+              errors.put(fieldName, errorMessage);
+            });
     return Result.error(400, "Validation failed");
   }
 
   /** 处理约束违反异常（如 @RequestParam 校验失败），收集违规字段信息 */
   @ExceptionHandler(ConstraintViolationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public Result<Map<String, String>> handleConstraintViolationException(ConstraintViolationException ex) {
+  public Result<Map<String, String>> handleConstraintViolationException(
+      ConstraintViolationException ex) {
     log.warn("Constraint violation: {}", ex.getMessage());
-    Map<String, String> errors = ex.getConstraintViolations().stream()
-      .collect(Collectors.toMap(
-        violation -> violation.getPropertyPath().toString(),
-        ConstraintViolation::getMessage,
-        (existing, replacement) -> existing
-      ));
+    Map<String, String> errors =
+        ex.getConstraintViolations().stream()
+            .collect(
+                Collectors.toMap(
+                    violation -> violation.getPropertyPath().toString(),
+                    ConstraintViolation::getMessage,
+                    (existing, replacement) -> existing));
     return Result.error(400, "Validation failed");
   }
 
   /** 处理缺少请求参数异常 */
   @ExceptionHandler(MissingServletRequestParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public Result<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+  public Result<Void> handleMissingServletRequestParameterException(
+      MissingServletRequestParameterException ex) {
     log.warn("Missing request parameter: {}", ex.getMessage());
-    return Result.error(400, String.format("Missing required parameter: %s", ex.getParameterName()));
+    return Result.error(
+        400, String.format("Missing required parameter: %s", ex.getParameterName()));
   }
 
   /** 处理HTTP请求方法不支持异常，返回 405 */
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-  public Result<Void> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+  public Result<Void> handleHttpRequestMethodNotSupportedException(
+      HttpRequestMethodNotSupportedException ex) {
     log.warn("Method not supported: {}", ex.getMessage());
     return Result.error(405, String.format("Method not supported: %s", ex.getMethod()));
   }
@@ -108,7 +113,8 @@ public class GlobalExceptionHandler {
   /** 处理参数类型不匹配异常（如传入字符串但期望数字） */
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public Result<Void> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+  public Result<Void> handleMethodArgumentTypeMismatchException(
+      MethodArgumentTypeMismatchException ex) {
     log.warn("Type mismatch: {}", ex.getMessage());
     return Result.error(400, String.format("Invalid parameter type for '%s'", ex.getName()));
   }

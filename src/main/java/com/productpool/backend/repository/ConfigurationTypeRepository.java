@@ -1,16 +1,16 @@
 package com.productpool.backend.repository;
 
 import com.productpool.backend.entity.ConfigurationType;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
 /**
  * 配置类型数据访问层
- * <p>提供配置类型的增删改查及层级结构查询功能。</p>
+ *
+ * <p>提供配置类型的增删改查及层级结构查询功能。
  */
 @Repository
 public interface ConfigurationTypeRepository extends JpaRepository<ConfigurationType, Long> {
@@ -51,7 +51,8 @@ public interface ConfigurationTypeRepository extends JpaRepository<Configuration
    * @param parentId 父分类ID
    * @return 配置类型列表（包含父分类及其子分类）
    */
-  @Query("SELECT c FROM ConfigurationType c WHERE c.parentId = :parentId OR c.id = :parentId ORDER BY c.sortOrder ASC")
+  @Query(
+      "SELECT c FROM ConfigurationType c WHERE c.parentId = :parentId OR c.id = :parentId ORDER BY c.sortOrder ASC")
   List<ConfigurationType> findHierarchyByParentId(Long parentId);
 
   /**

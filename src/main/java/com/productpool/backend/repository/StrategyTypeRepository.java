@@ -1,14 +1,14 @@
 package com.productpool.backend.repository;
 
 import com.productpool.backend.entity.StrategyType;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 /**
  * 策略类型数据访问层
- * <p>提供策略类型的基本数据访问操作，包括按业绩对标ID查询等。</p>
+ *
+ * <p>提供策略类型的基本数据访问操作，包括按业绩对标ID查询等。
  */
 @Repository
 public interface StrategyTypeRepository extends JpaRepository<StrategyType, Long> {

@@ -1,6 +1,7 @@
 package com.productpool.backend.repository;
 
 import com.productpool.backend.entity.Product;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,11 +9,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 /**
  * 产品数据访问层
- * <p>提供产品的基本数据访问操作，包括多条件查询、分页查询等。</p>
+ *
+ * <p>提供产品的基本数据访问操作，包括多条件查询、分页查询等。
  */
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -69,11 +69,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
    * @param pageable 分页参数
    * @return 产品分页结果
    */
-  @Query("SELECT p FROM Product p WHERE (:name IS NULL OR p.name LIKE %:name%) " +
-         "AND (:code IS NULL OR p.code LIKE %:code%) " +
-         "AND (:strategyTypeId IS NULL OR p.strategyTypeId = :strategyTypeId) " +
-         "AND (:riskLevel IS NULL OR p.riskLevel = :riskLevel) " +
-         "AND (:isActive IS NULL OR p.isActive = :isActive)")
+  @Query(
+      "SELECT p FROM Product p WHERE (:name IS NULL OR p.name LIKE %:name%) "
+          + "AND (:code IS NULL OR p.code LIKE %:code%) "
+          + "AND (:strategyTypeId IS NULL OR p.strategyTypeId = :strategyTypeId) "
+          + "AND (:riskLevel IS NULL OR p.riskLevel = :riskLevel) "
+          + "AND (:isActive IS NULL OR p.isActive = :isActive)")
   Page<Product> findByQuery(
       @Param("name") String name,
       @Param("code") String code,

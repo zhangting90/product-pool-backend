@@ -7,18 +7,13 @@ import com.productpool.backend.dto.StrategyTypeQueryDTO;
 import com.productpool.backend.dto.StrategyTypeUpdateDTO;
 import com.productpool.backend.service.StrategyTypeService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-/**
- * 策略类型管理控制器
- * 提供策略类型的增删改查 API 接口，支持按基准筛选
- * 基础路径: /api/v1/strategy-types
- */
+/** 策略类型管理控制器 提供策略类型的增删改查 API 接口，支持按基准筛选 基础路径: /api/v1/strategy-types */
 @RestController
 @RequestMapping("/api/v1/strategy-types")
 @RequiredArgsConstructor
@@ -31,9 +26,7 @@ public class StrategyTypeController {
   public ResponseEntity<Result<StrategyTypeDTO>> create(
       @Valid @RequestBody StrategyTypeCreateDTO createDTO) {
     StrategyTypeDTO dto = strategyTypeService.create(createDTO);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(Result.success(dto));
+    return ResponseEntity.status(HttpStatus.CREATED).body(Result.success(dto));
   }
 
   /** 根据ID查询策略类型 GET /api/v1/strategy-types/{id} */
@@ -58,8 +51,7 @@ public class StrategyTypeController {
   /** 更新策略类型 PUT /api/v1/strategy-types/{id} */
   @PutMapping("/{id}")
   public ResponseEntity<Result<StrategyTypeDTO>> update(
-      @PathVariable Long id,
-      @Valid @RequestBody StrategyTypeUpdateDTO updateDTO) {
+      @PathVariable Long id, @Valid @RequestBody StrategyTypeUpdateDTO updateDTO) {
     StrategyTypeDTO dto = strategyTypeService.update(id, updateDTO);
     return ResponseEntity.ok(Result.success(dto));
   }

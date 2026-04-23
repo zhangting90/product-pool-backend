@@ -1,14 +1,12 @@
 package com.productpool.backend.dto;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
- * 分页结果通用DTO
- * 用于封装分页查询的返回结果，包含数据列表和分页信息
+ * 分页结果通用DTO 用于封装分页查询的返回结果，包含数据列表和分页信息
  *
  * @param <T> 数据类型
  */

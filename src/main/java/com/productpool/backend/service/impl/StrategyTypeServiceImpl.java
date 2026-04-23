@@ -11,17 +11,16 @@ import com.productpool.backend.exception.ResourceNotFoundException;
 import com.productpool.backend.repository.BenchmarkRepository;
 import com.productpool.backend.repository.StrategyTypeRepository;
 import com.productpool.backend.service.StrategyTypeService;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * 策略类型服务实现类
- * <p>实现策略类型的创建、查询、更新、删除等业务逻辑，
- * 包含关联产品检查以确保数据完整性。</p>
+ *
+ * <p>实现策略类型的创建、查询、更新、删除等业务逻辑， 包含关联产品检查以确保数据完整性。
  */
 @Service
 @RequiredArgsConstructor
@@ -33,7 +32,8 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
 
   /**
    * 创建策略类型
-   * <p>验证关联的业绩对标存在性后创建新策略类型。</p>
+   *
+   * <p>验证关联的业绩对标存在性后创建新策略类型。
    *
    * @param createDTO 创建策略类型的DTO
    * @return 创建后的策略类型DTO
@@ -43,9 +43,11 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
   @Transactional
   public StrategyTypeDTO create(StrategyTypeCreateDTO createDTO) {
     // 验证业绩对标是否存在
-    Benchmark benchmark = benchmarkRepository
-        .findById(createDTO.getBenchmarkId())
-        .orElseThrow(() -> new ResourceNotFoundException("Benchmark", createDTO.getBenchmarkId()));
+    Benchmark benchmark =
+        benchmarkRepository
+            .findById(createDTO.getBenchmarkId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("Benchmark", createDTO.getBenchmarkId()));
 
     StrategyType entity = new StrategyType();
     entity.setName(createDTO.getName());
@@ -66,9 +68,10 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
    */
   @Override
   public StrategyTypeDTO findById(Long id) {
-    StrategyType entity = strategyTypeRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("StrategyType", id));
+    StrategyType entity =
+        strategyTypeRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("StrategyType", id));
     return StrategyTypeDTO.fromEntity(entity);
   }
 
@@ -80,14 +83,13 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
   @Override
   public List<StrategyTypeDTO> findAll() {
     List<StrategyType> entities = strategyTypeRepository.findAll();
-    return entities.stream()
-        .map(StrategyTypeDTO::fromEntity)
-        .collect(Collectors.toList());
+    return entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
   }
 
   /**
    * 根据条件查询策略类型
-   * <p>支持按业绩对标ID查询，未指定条件则查询全部。</p>
+   *
+   * <p>支持按业绩对标ID查询，未指定条件则查询全部。
    *
    * @param queryDTO 查询条件DTO
    * @return 策略类型DTO列表
@@ -97,20 +99,19 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
     List<StrategyType> entities;
 
     if (queryDTO.getBenchmarkId() != null) {
-      entities = strategyTypeRepository
-          .findByBenchmarkIdOrderBySortOrderAsc(queryDTO.getBenchmarkId());
+      entities =
+          strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAsc(queryDTO.getBenchmarkId());
     } else {
       entities = strategyTypeRepository.findAll();
     }
 
-    return entities.stream()
-        .map(StrategyTypeDTO::fromEntity)
-        .collect(Collectors.toList());
+    return entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
   }
 
   /**
    * 更新策略类型
-   * <p>仅更新非null字段（名称、描述、排序）。</p>
+   *
+   * <p>仅更新非null字段（名称、描述、排序）。
    *
    * @param id 策略类型ID
    * @param updateDTO 更新策略类型的DTO
@@ -120,9 +121,10 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
   @Override
   @Transactional
   public StrategyTypeDTO update(Long id, StrategyTypeUpdateDTO updateDTO) {
-    StrategyType entity = strategyTypeRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("StrategyType", id));
+    StrategyType entity =
+        strategyTypeRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("StrategyType", id));
 
     if (updateDTO.getName() != null) {
       entity.setName(updateDTO.getName());
@@ -140,7 +142,8 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
 
   /**
    * 删除策略类型
-   * <p>删除前检查是否有关联的产品，存在则阻止删除。</p>
+   *
+   * <p>删除前检查是否有关联的产品，存在则阻止删除。
    *
    * @param id 策略类型ID
    * @throws ResourceNotFoundException 策略类型不存在时抛出
@@ -149,9 +152,10 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
   @Override
   @Transactional
   public void delete(Long id) {
-    StrategyType entity = strategyTypeRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("StrategyType", id));
+    StrategyType entity =
+        strategyTypeRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("StrategyType", id));
 
     // 检查是否有关联的产品
     if (productRepository.existsByStrategyTypeId(id)) {
@@ -170,10 +174,8 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
    */
   @Override
   public List<StrategyTypeDTO> findByBenchmarkId(Long benchmarkId) {
-    List<StrategyType> entities = strategyTypeRepository
-        .findByBenchmarkIdOrderBySortOrderAsc(benchmarkId);
-    return entities.stream()
-        .map(StrategyTypeDTO::fromEntity)
-        .collect(Collectors.toList());
+    List<StrategyType> entities =
+        strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAsc(benchmarkId);
+    return entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
   }
 }

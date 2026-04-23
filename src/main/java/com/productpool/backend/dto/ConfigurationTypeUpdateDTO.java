@@ -1,16 +1,12 @@
 package com.productpool.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * 配置类型更新请求DTO
- * 用于接收前端更新配置类型时的请求参数
- */
+/** 配置类型更新请求DTO 用于接收前端更新配置类型时的请求参数 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

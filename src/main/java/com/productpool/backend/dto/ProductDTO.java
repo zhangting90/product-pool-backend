@@ -1,17 +1,13 @@
 package com.productpool.backend.dto;
 
 import com.productpool.backend.entity.Product;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-/**
- * 产品响应DTO
- * 用于返回产品的完整信息
- */
+/** 产品响应DTO 用于返回产品的完整信息 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

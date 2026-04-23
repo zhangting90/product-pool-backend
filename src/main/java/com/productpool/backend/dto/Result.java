@@ -1,14 +1,12 @@
 package com.productpool.backend.dto;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 /**
- * 统一响应体类
- * 封装所有API接口的返回结果，包含状态码、消息、数据和时间戳
+ * 统一响应体类 封装所有API接口的返回结果，包含状态码、消息、数据和时间戳
  *
  * @param <T> 响应数据的泛型类型
  */

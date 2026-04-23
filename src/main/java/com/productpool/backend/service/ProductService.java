@@ -7,11 +7,10 @@ import com.productpool.backend.dto.ProductUpdateDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 /**
  * 产品服务接口
- * <p>定义产品的增删改查、多条件分页查询及激活产品查询等业务方法。</p>
+ *
+ * <p>定义产品的增删改查、多条件分页查询及激活产品查询等业务方法。
  */
 public interface ProductService {
 

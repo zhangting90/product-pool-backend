@@ -1,9 +1,6 @@
 package com.productpool.backend.exception;
 
-/**
- * 资源重复异常
- * 当尝试创建的资源在数据库中已存在（如编码重复）时抛出此异常
- */
+/** 资源重复异常 当尝试创建的资源在数据库中已存在（如编码重复）时抛出此异常 */
 public class DuplicateResourceException extends RuntimeException {
 
   /** 根据自定义消息构造异常 */
