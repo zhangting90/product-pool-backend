@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: product-pool-backend
+
+  profiles:
+    active: dev
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.OracleDialect
+
+  jackson:
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: true
+
+  server:
+    port: 8080
+    servlet:
+      context-path: /api
+
+---
+# Production profile with Oracle database
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:oracle:thin:@localhost:1521:XE}
+    driverClassName: oracle.jdbc.OracleDriver
+    username: ${DB_USERNAME:system}
+    password: ${DB_PASSWORD:password}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
