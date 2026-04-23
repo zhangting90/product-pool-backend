@@ -175,7 +175,7 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
 
     // 检查是否有子分类
     List<ConfigurationType> children =
-        configurationTypeRepository.findByParentIdOrderBySortOrderAsc(id);
+        configurationTypeRepository.findByParentIdOrderBySortOrderAscUpdatedAtAsc(id);
     if (!children.isEmpty()) {
       throw new BusinessLogicException(
           "Cannot delete configuration type with child types. Please delete child types first.");
@@ -206,7 +206,8 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
 
               // 获取子分类
               List<ConfigurationType> subTypes =
-                  configurationTypeRepository.findByParentIdOrderBySortOrderAsc(majorType.getId());
+                  configurationTypeRepository.findByParentIdOrderBySortOrderAscUpdatedAtAsc(
+                      majorType.getId());
               dto.setChildren(
                   subTypes.stream()
                       .map(ConfigurationTypeDTO::fromEntity)
@@ -226,7 +227,7 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
   @Override
   public List<ConfigurationTypeDTO> findByParentId(Long parentId) {
     List<ConfigurationType> entities =
-        configurationTypeRepository.findByParentIdOrderBySortOrderAsc(parentId);
+        configurationTypeRepository.findByParentIdOrderBySortOrderAscUpdatedAtAsc(parentId);
     return entities.stream().map(ConfigurationTypeDTO::fromEntity).collect(Collectors.toList());
   }
 

@@ -20,7 +20,7 @@ public interface ConfigurationTypeRepository extends JpaRepository<Configuration
    *
    * @return 大分类列表
    */
-  List<ConfigurationType> findByIsMajorTrueOrderBySortOrderAsc();
+  List<ConfigurationType> findByIsMajorTrueOrderBySortOrderAscUpdatedAtAsc();
 
   /**
    * 根据父分类ID查询子分类，按排序字段升序排列
@@ -28,14 +28,14 @@ public interface ConfigurationTypeRepository extends JpaRepository<Configuration
    * @param parentId 父分类ID
    * @return 子分类列表
    */
-  List<ConfigurationType> findByParentIdOrderBySortOrderAsc(Long parentId);
+  List<ConfigurationType> findByParentIdOrderBySortOrderAscUpdatedAtAsc(Long parentId);
 
   /**
    * 查询所有顶级分类（parentId为null），按排序字段升序排列
    *
    * @return 顶级分类列表
    */
-  List<ConfigurationType> findByParentIdNullOrderBySortOrderAsc();
+  List<ConfigurationType> findByParentIdNullOrderBySortOrderAscUpdatedAtAsc();
 
   /**
    * 查询指定父分类及其自身的层级结构，按排序字段升序排列
@@ -44,7 +44,7 @@ public interface ConfigurationTypeRepository extends JpaRepository<Configuration
    * @return 配置类型列表（包含父分类及其子分类）
    */
   @Query(
-      "SELECT c FROM ConfigurationType c WHERE c.parentId = :parentId OR c.id = :parentId ORDER BY c.sortOrder ASC")
+      "SELECT c FROM ConfigurationType c WHERE c.parentId = :parentId OR c.id = :parentId ORDER BY c.sortOrder ASC, c.updatedAt ASC")
   List<ConfigurationType> findHierarchyByParentId(Long parentId);
 
   /**
@@ -52,7 +52,8 @@ public interface ConfigurationTypeRepository extends JpaRepository<Configuration
    *
    * @return 大分类列表
    */
-  @Query("SELECT c FROM ConfigurationType c WHERE c.isMajor = true ORDER BY c.sortOrder ASC")
+  @Query(
+      "SELECT c FROM ConfigurationType c WHERE c.isMajor = true ORDER BY c.sortOrder ASC, c.updatedAt ASC")
   List<ConfigurationType> findMajorTypesWithSubTypes();
 
   /**
@@ -67,7 +68,7 @@ public interface ConfigurationTypeRepository extends JpaRepository<Configuration
       "SELECT c FROM ConfigurationType c WHERE (:name IS NULL OR c.name LIKE %:name%) "
           + "AND (:isMajor IS NULL OR c.isMajor = :isMajor) "
           + "AND (:parentId IS NULL OR c.parentId = :parentId) "
-          + "ORDER BY c.sortOrder ASC")
+          + "ORDER BY c.sortOrder ASC, c.updatedAt ASC")
   List<ConfigurationType> findByQuery(
       @Param("name") String name,
       @Param("isMajor") Boolean isMajor,

@@ -21,7 +21,7 @@ public interface StrategyTypeRepository extends JpaRepository<StrategyType, Long
    * @param benchmarkId 业绩对标ID
    * @return 策略类型列表
    */
-  List<StrategyType> findByBenchmarkIdOrderBySortOrderAsc(Long benchmarkId);
+  List<StrategyType> findByBenchmarkIdOrderBySortOrderAscUpdatedAtAsc(Long benchmarkId);
 
   /**
    * 多条件动态查询策略类型（支持名称、业绩对标ID）
@@ -33,7 +33,7 @@ public interface StrategyTypeRepository extends JpaRepository<StrategyType, Long
   @Query(
       "SELECT s FROM StrategyType s WHERE (:name IS NULL OR s.name LIKE %:name%) "
           + "AND (:benchmarkId IS NULL OR s.benchmarkId = :benchmarkId) "
-          + "ORDER BY s.sortOrder ASC")
+          + "ORDER BY s.sortOrder ASC, s.updatedAt ASC")
   List<StrategyType> findByQuery(
       @Param("name") String name, @Param("benchmarkId") Long benchmarkId);
 

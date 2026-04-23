@@ -72,7 +72,9 @@ public class ProductController {
     queryDTO.setCode(code);
     queryDTO.setStrategyTypeId(strategyTypeId);
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("sortOrder").ascending());
+    Pageable pageable =
+        PageRequest.of(
+            page, size, Sort.by(Sort.Order.asc("sortOrder"), Sort.Order.asc("updatedAt")));
     Page<ProductDTO> result = productService.findByQuery(queryDTO, pageable);
 
     return ResponseEntity.ok(Result.success(toPageResult(result)));
@@ -100,7 +102,9 @@ public class ProductController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("sortOrder").ascending());
+    Pageable pageable =
+        PageRequest.of(
+            page, size, Sort.by(Sort.Order.asc("sortOrder"), Sort.Order.asc("updatedAt")));
     Page<ProductDTO> result = productService.findByStrategyTypeId(strategyTypeId, pageable);
 
     return ResponseEntity.ok(Result.success(toPageResult(result)));

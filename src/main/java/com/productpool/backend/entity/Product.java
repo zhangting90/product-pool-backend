@@ -43,7 +43,7 @@ public class Product {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
-  /** 持久化前回调：设置时间戳，sortOrder默认为创建时间戳（秒） */
+  /** 持久化前回调：设置时间戳，sortOrder默认为0 */
   @PrePersist
   protected void onCreate() {
     createdAt = LocalDateTime.now();

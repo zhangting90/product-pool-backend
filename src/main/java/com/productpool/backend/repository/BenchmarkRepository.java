@@ -21,7 +21,8 @@ public interface BenchmarkRepository extends JpaRepository<Benchmark, Long> {
    * @param configurationTypeId 配置类型ID
    * @return 业绩对标列表
    */
-  List<Benchmark> findByConfigurationTypeIdOrderBySortOrderAsc(Long configurationTypeId);
+  List<Benchmark> findByConfigurationTypeIdOrderBySortOrderAscUpdatedAtAsc(
+      Long configurationTypeId);
 
   /**
    * 多条件动态查询业绩对标（支持名称、配置类型ID）
@@ -33,7 +34,7 @@ public interface BenchmarkRepository extends JpaRepository<Benchmark, Long> {
   @Query(
       "SELECT b FROM Benchmark b WHERE (:name IS NULL OR b.name LIKE %:name%) "
           + "AND (:configurationTypeId IS NULL OR b.configurationTypeId = :configurationTypeId) "
-          + "ORDER BY b.sortOrder ASC")
+          + "ORDER BY b.sortOrder ASC, b.updatedAt ASC")
   List<Benchmark> findByQuery(
       @Param("name") String name, @Param("configurationTypeId") Long configurationTypeId);
 
