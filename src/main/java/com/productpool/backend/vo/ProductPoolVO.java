@@ -18,9 +18,6 @@ public class ProductPoolVO {
   /** 配置类型名称 */
   private String configurationTypeName;
 
-  /** 配置类型代码 */
-  private String configurationTypeCode;
-
   /** 是否为大分类 */
   private Boolean isMajor;
 
@@ -43,7 +40,6 @@ public class ProductPoolVO {
   public static class ConfigurationTypeVO {
     private Long id;
     private String name;
-    private String code;
     private Integer sortOrder;
     private List<BenchmarkVO> benchmarks;
   }
@@ -55,7 +51,6 @@ public class ProductPoolVO {
   public static class BenchmarkVO {
     private Long id;
     private String name;
-    private String code;
     private Integer sortOrder;
     private List<StrategyTypeVO> strategyTypes;
   }

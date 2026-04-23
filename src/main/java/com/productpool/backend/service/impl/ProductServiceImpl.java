@@ -28,12 +28,11 @@ public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
   private final StrategyTypeRepository strategyTypeRepository;
-  private final BenchmarkRepository benchmarkRepository;
 
   /**
    * 创建产品
    *
-   * <p>校验编码唯一性和策略类型存在性后创建新产品，默认激活状态为true。
+   * <p>校验编码唯一性和策略类型存在性后创建新产品。
    *
    * @param createDTO 创建产品的DTO
    * @return 创建后的产品DTO
@@ -44,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
   @Transactional
   public ProductDTO create(ProductCreateDTO createDTO) {
     // 检查code是否已存在
-    if (productRepository.existsByCode(createDTO.getCode())) {
+    if (productRepository.existsById(createDTO.getCode())) {
       throw new DuplicateResourceException("Product", "code", createDTO.getCode());
     }
 
@@ -56,19 +55,10 @@ public class ProductServiceImpl implements ProductService {
                 () -> new ResourceNotFoundException("StrategyType", createDTO.getStrategyTypeId()));
 
     Product entity = new Product();
-    entity.setName(createDTO.getName());
     entity.setCode(createDTO.getCode());
+    entity.setName(createDTO.getName());
     entity.setStrategyTypeId(strategyType.getId());
-    entity.setRiskLevel(createDTO.getRiskLevel());
-    entity.setAnnualReturn(createDTO.getAnnualReturn());
-    entity.setVolatility(createDTO.getVolatility());
-    entity.setSharpeRatio(createDTO.getSharpeRatio());
-    entity.setMaxDrawdown(createDTO.getMaxDrawdown());
-    entity.setFundManager(createDTO.getFundManager());
-    entity.setFundScale(createDTO.getFundScale());
-    entity.setInceptionDate(createDTO.getInceptionDate());
     entity.setDescription(createDTO.getDescription());
-    entity.setIsActive(createDTO.getIsActive() != null ? createDTO.getIsActive() : true);
     entity.setSortOrder(createDTO.getSortOrder());
 
     Product saved = productRepository.save(entity);
@@ -76,18 +66,18 @@ public class ProductServiceImpl implements ProductService {
   }
 
   /**
-   * 根据ID查询产品
+   * 根据编码查询产品
    *
-   * @param id 产品ID
+   * @param code 产品编码
    * @return 产品DTO
    * @throws ResourceNotFoundException 产品不存在时抛出
    */
   @Override
-  public ProductDTO findById(Long id) {
+  public ProductDTO findById(String code) {
     Product entity =
         productRepository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+            .findById(code)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", code));
     return ProductDTO.fromEntity(entity);
   }
 
@@ -106,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
   /**
    * 根据条件分页查询产品
    *
-   * <p>支持按名称、编码、策略类型、风险等级、激活状态等多条件查询。
+   * <p>支持按名称、编码、策略类型等多条件查询。
    *
    * @param queryDTO 查询条件DTO
    * @param pageable 分页参数
@@ -116,12 +106,7 @@ public class ProductServiceImpl implements ProductService {
   public Page<ProductDTO> findByQuery(ProductQueryDTO queryDTO, Pageable pageable) {
     Page<Product> entities =
         productRepository.findByQuery(
-            queryDTO.getName(),
-            queryDTO.getCode(),
-            queryDTO.getStrategyTypeId(),
-            queryDTO.getRiskLevel(),
-            queryDTO.getIsActive(),
-            pageable);
+            queryDTO.getName(), queryDTO.getCode(), queryDTO.getStrategyTypeId(), pageable);
     return entities.map(ProductDTO::fromEntity);
   }
 
@@ -130,51 +115,24 @@ public class ProductServiceImpl implements ProductService {
    *
    * <p>仅更新非null字段。
    *
-   * @param id 产品ID
+   * @param code 产品编码
    * @param updateDTO 更新产品的DTO
    * @return 更新后的产品DTO
    * @throws ResourceNotFoundException 产品不存在时抛出
    */
   @Override
   @Transactional
-  public ProductDTO update(Long id, ProductUpdateDTO updateDTO) {
+  public ProductDTO update(String code, ProductUpdateDTO updateDTO) {
     Product entity =
         productRepository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+            .findById(code)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", code));
 
     if (updateDTO.getName() != null) {
       entity.setName(updateDTO.getName());
     }
     if (updateDTO.getDescription() != null) {
       entity.setDescription(updateDTO.getDescription());
-    }
-    if (updateDTO.getRiskLevel() != null) {
-      entity.setRiskLevel(updateDTO.getRiskLevel());
-    }
-    if (updateDTO.getAnnualReturn() != null) {
-      entity.setAnnualReturn(updateDTO.getAnnualReturn());
-    }
-    if (updateDTO.getVolatility() != null) {
-      entity.setVolatility(updateDTO.getVolatility());
-    }
-    if (updateDTO.getSharpeRatio() != null) {
-      entity.setSharpeRatio(updateDTO.getSharpeRatio());
-    }
-    if (updateDTO.getMaxDrawdown() != null) {
-      entity.setMaxDrawdown(updateDTO.getMaxDrawdown());
-    }
-    if (updateDTO.getFundManager() != null) {
-      entity.setFundManager(updateDTO.getFundManager());
-    }
-    if (updateDTO.getFundScale() != null) {
-      entity.setFundScale(updateDTO.getFundScale());
-    }
-    if (updateDTO.getInceptionDate() != null) {
-      entity.setInceptionDate(updateDTO.getInceptionDate());
-    }
-    if (updateDTO.getIsActive() != null) {
-      entity.setIsActive(updateDTO.getIsActive());
     }
     if (updateDTO.getSortOrder() != null) {
       entity.setSortOrder(updateDTO.getSortOrder());
@@ -187,16 +145,16 @@ public class ProductServiceImpl implements ProductService {
   /**
    * 删除产品
    *
-   * @param id 产品ID
+   * @param code 产品编码
    * @throws ResourceNotFoundException 产品不存在时抛出
    */
   @Override
   @Transactional
-  public void delete(Long id) {
+  public void delete(String code) {
     Product entity =
         productRepository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+            .findById(code)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", code));
     productRepository.delete(entity);
   }
 
@@ -210,18 +168,6 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<ProductDTO> findByStrategyTypeId(Long strategyTypeId, Pageable pageable) {
     Page<Product> entities = productRepository.findByStrategyTypeId(strategyTypeId, pageable);
-    return entities.map(ProductDTO::fromEntity);
-  }
-
-  /**
-   * 分页查询所有激活状态的产品
-   *
-   * @param pageable 分页参数
-   * @return 激活产品分页结果，按排序字段升序排列
-   */
-  @Override
-  public Page<ProductDTO> findActiveProducts(Pageable pageable) {
-    Page<Product> entities = productRepository.findByIsActiveTrueOrderBySortOrderAsc(pageable);
     return entities.map(ProductDTO::fromEntity);
   }
 }

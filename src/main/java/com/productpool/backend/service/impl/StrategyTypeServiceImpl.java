@@ -9,6 +9,7 @@ import com.productpool.backend.entity.StrategyType;
 import com.productpool.backend.exception.BusinessLogicException;
 import com.productpool.backend.exception.ResourceNotFoundException;
 import com.productpool.backend.repository.BenchmarkRepository;
+import com.productpool.backend.repository.ProductRepository;
 import com.productpool.backend.repository.StrategyTypeRepository;
 import com.productpool.backend.service.StrategyTypeService;
 import java.util.List;
@@ -96,14 +97,8 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
    */
   @Override
   public List<StrategyTypeDTO> findByQuery(StrategyTypeQueryDTO queryDTO) {
-    List<StrategyType> entities;
-
-    if (queryDTO.getBenchmarkId() != null) {
-      entities =
-          strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAsc(queryDTO.getBenchmarkId());
-    } else {
-      entities = strategyTypeRepository.findAll();
-    }
+    List<StrategyType> entities =
+        strategyTypeRepository.findByQuery(queryDTO.getName(), queryDTO.getBenchmarkId());
 
     return entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
   }

@@ -3,6 +3,7 @@ package com.productpool.backend.entity;
 import com.productpool.backend.util.IdGenerator;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,13 +21,9 @@ public class ConfigurationType {
   @Column(name = "id", nullable = false, updatable = false)
   private Long id;
 
-  /** 配置类型名称 */
-  @Column(name = "name", nullable = false, length = 100)
+  /** 配置类型名称，全局唯一 */
+  @Column(name = "name", nullable = false, unique = true, length = 100)
   private String name;
-
-  /** 配置类型编码，全局唯一 */
-  @Column(name = "code", nullable = false, unique = true, length = 50)
-  private String code;
 
   /** 配置类型描述 */
   @Column(name = "description", length = 500)
@@ -52,7 +49,7 @@ public class ConfigurationType {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
-  /** 持久化前回调：自动生成ID、设置时间戳和默认排序 */
+  /** 持久化前回调：自动生成ID、设置时间戳，sortOrder默认为创建时间戳（秒） */
   @PrePersist
   protected void onCreate() {
     if (id == null) {
@@ -61,7 +58,7 @@ public class ConfigurationType {
     createdAt = LocalDateTime.now();
     updatedAt = LocalDateTime.now();
     if (sortOrder == null) {
-      sortOrder = 0;
+      sortOrder = (int) createdAt.toEpochSecond(ZoneOffset.UTC);
     }
   }
 

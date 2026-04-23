@@ -36,13 +36,11 @@ public class ConfigurationTypeController {
   @GetMapping
   public ResponseEntity<Result<List<ConfigurationTypeDTO>>> findAll(
       @RequestParam(required = false) Boolean isMajor,
-      @RequestParam(required = false) Long parentId,
-      @RequestParam(required = false) String code) {
+      @RequestParam(required = false) Long parentId) {
 
     ConfigurationTypeQueryDTO queryDTO = new ConfigurationTypeQueryDTO();
     queryDTO.setIsMajor(isMajor);
     queryDTO.setParentId(parentId);
-    queryDTO.setCode(code);
 
     List<ConfigurationTypeDTO> result = configurationTypeService.findByQuery(queryDTO);
     return ResponseEntity.ok(Result.success(result));

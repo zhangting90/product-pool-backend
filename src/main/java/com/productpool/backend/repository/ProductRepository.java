@@ -1,7 +1,7 @@
 package com.productpool.backend.repository;
 
 import com.productpool.backend.entity.Product;
-import java.util.Optional;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,15 +15,7 @@ import org.springframework.stereotype.Repository;
  * <p>提供产品的基本数据访问操作，包括多条件查询、分页查询等。
  */
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
-
-  /**
-   * 根据编码查询产品
-   *
-   * @param code 产品编码
-   * @return 产品的Optional包装
-   */
-  Optional<Product> findByCode(String code);
+public interface ProductRepository extends JpaRepository<Product, String> {
 
   /**
    * 根据策略类型ID分页查询产品
@@ -51,43 +43,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   boolean existsByStrategyTypeId(Long strategyTypeId);
 
   /**
-   * 分页查询所有激活状态的产品，按排序字段升序排列
-   *
-   * @param pageable 分页参数
-   * @return 激活产品分页结果
-   */
-  Page<Product> findByIsActiveTrueOrderBySortOrderAsc(Pageable pageable);
-
-  /**
-   * 多条件动态查询产品（支持名称、编码、策略类型、风险等级、激活状态的模糊或精确匹配）
+   * 多条件动态查询产品（支持名称、编码、策略类型的模糊或精确匹配）
    *
    * @param name 产品名称（模糊匹配，可为null）
    * @param code 产品编码（模糊匹配，可为null）
    * @param strategyTypeId 策略类型ID（精确匹配，可为null）
-   * @param riskLevel 风险等级（精确匹配，可为null）
-   * @param isActive 激活状态（精确匹配，可为null）
    * @param pageable 分页参数
    * @return 产品分页结果
    */
   @Query(
       "SELECT p FROM Product p WHERE (:name IS NULL OR p.name LIKE %:name%) "
           + "AND (:code IS NULL OR p.code LIKE %:code%) "
-          + "AND (:strategyTypeId IS NULL OR p.strategyTypeId = :strategyTypeId) "
-          + "AND (:riskLevel IS NULL OR p.riskLevel = :riskLevel) "
-          + "AND (:isActive IS NULL OR p.isActive = :isActive)")
+          + "AND (:strategyTypeId IS NULL OR p.strategyTypeId = :strategyTypeId)")
   Page<Product> findByQuery(
       @Param("name") String name,
       @Param("code") String code,
       @Param("strategyTypeId") Long strategyTypeId,
-      @Param("riskLevel") String riskLevel,
-      @Param("isActive") Boolean isActive,
       Pageable pageable);
-
-  /**
-   * 判断指定编码的产品是否已存在
-   *
-   * @param code 产品编码
-   * @return 存在返回true，否则返回false
-   */
-  boolean existsByCode(String code);
 }

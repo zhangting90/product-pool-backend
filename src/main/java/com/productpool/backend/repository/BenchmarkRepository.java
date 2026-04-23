@@ -2,25 +2,18 @@ package com.productpool.backend.repository;
 
 import com.productpool.backend.entity.Benchmark;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
  * 业绩对标数据访问层
  *
- * <p>提供业绩对标的基本数据访问操作，包括按编码、按配置类型查询等。
+ * <p>提供业绩对标的基本数据访问操作，包括按名称、按配置类型查询等。
  */
 @Repository
 public interface BenchmarkRepository extends JpaRepository<Benchmark, Long> {
-
-  /**
-   * 根据编码查询业绩对标
-   *
-   * @param code 业绩对标编码
-   * @return 业绩对标的Optional包装
-   */
-  Optional<Benchmark> findByCode(String code);
 
   /**
    * 根据配置类型ID查询业绩对标，按排序字段升序排列
@@ -31,12 +24,26 @@ public interface BenchmarkRepository extends JpaRepository<Benchmark, Long> {
   List<Benchmark> findByConfigurationTypeIdOrderBySortOrderAsc(Long configurationTypeId);
 
   /**
-   * 判断指定编码的业绩对标是否已存在
+   * 多条件动态查询业绩对标（支持名称、配置类型ID）
    *
-   * @param code 业绩对标编码
+   * @param name 业绩对标名称（模糊匹配，可为null）
+   * @param configurationTypeId 配置类型ID（精确匹配，可为null）
+   * @return 业绩对标列表
+   */
+  @Query(
+      "SELECT b FROM Benchmark b WHERE (:name IS NULL OR b.name LIKE %:name%) "
+          + "AND (:configurationTypeId IS NULL OR b.configurationTypeId = :configurationTypeId) "
+          + "ORDER BY b.sortOrder ASC")
+  List<Benchmark> findByQuery(
+      @Param("name") String name, @Param("configurationTypeId") Long configurationTypeId);
+
+  /**
+   * 判断指定名称的业绩对标是否已存在
+   *
+   * @param name 业绩对标名称
    * @return 存在返回true，否则返回false
    */
-  boolean existsByCode(String code);
+  boolean existsByName(String name);
 
   /**
    * 判断指定配置类型下是否存在业绩对标

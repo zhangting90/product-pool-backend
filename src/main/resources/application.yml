@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -19,16 +19,8 @@ spring:
     servlet:
       context-path: /api
 
----
-# Production profile with Oracle database
-spring:
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521:ORCLPDB
+    url: jdbc:oracle:thin:@//localhost:1521/ORCLPDB
     driverClassName: oracle.jdbc.OracleDriver
     username: testuser
     password: Test123
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true

@@ -19,9 +19,6 @@ public class ConfigurationTypeDTO {
   /** 配置类型名称 */
   private String name;
 
-  /** 配置类型编码 */
-  private String code;
-
   /** 配置类型描述 */
   private String description;
 
@@ -56,7 +53,6 @@ public class ConfigurationTypeDTO {
     ConfigurationTypeDTO dto = new ConfigurationTypeDTO();
     dto.setId(entity.getId());
     dto.setName(entity.getName());
-    dto.setCode(entity.getCode());
     dto.setDescription(entity.getDescription());
     dto.setIsMajor(entity.getIsMajor());
     dto.setParentId(entity.getParentId());

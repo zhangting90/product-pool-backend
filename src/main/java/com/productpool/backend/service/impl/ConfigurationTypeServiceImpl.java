@@ -43,31 +43,34 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
   @Override
   @Transactional
   public ConfigurationTypeDTO create(ConfigurationTypeCreateDTO createDTO) {
-    // 检查code是否已存在
-    if (configurationTypeRepository.existsByCode(createDTO.getCode())) {
-      throw new DuplicateResourceException("ConfigurationType", "code", createDTO.getCode());
+    // 检查name是否已存在
+    if (configurationTypeRepository.existsByName(createDTO.getName())) {
+      throw new DuplicateResourceException("ConfigurationType", "name", createDTO.getName());
     }
 
-    // 如果是子分类，验证父分类是否存在
-    if (Boolean.FALSE.equals(createDTO.getIsMajor()) && createDTO.getParentId() != null) {
+    // 大分类时parentId必须为空
+    if (Boolean.TRUE.equals(createDTO.getIsMajor()) && createDTO.getParentId() != null) {
+      throw new BusinessLogicException("Major type must not have a parent ID");
+    }
+
+    // 小分类时parentId必须不为空，且父分类必须是大分类
+    if (Boolean.FALSE.equals(createDTO.getIsMajor())) {
+      if (createDTO.getParentId() == null) {
+        throw new BusinessLogicException("Sub-type must have a parent ID");
+      }
       ConfigurationType parent =
           configurationTypeRepository
               .findById(createDTO.getParentId())
               .orElseThrow(
                   () ->
                       new ResourceNotFoundException("ConfigurationType", createDTO.getParentId()));
-
-      // 父分类必须是大分类
       if (Boolean.FALSE.equals(parent.getIsMajor())) {
         throw new BusinessLogicException("Parent configuration type must be a major type");
       }
-    } else if (Boolean.FALSE.equals(createDTO.getIsMajor()) && createDTO.getParentId() == null) {
-      throw new BusinessLogicException("Sub-type must have a parent ID");
     }
 
     ConfigurationType entity = new ConfigurationType();
     entity.setName(createDTO.getName());
-    entity.setCode(createDTO.getCode());
     entity.setDescription(createDTO.getDescription());
     entity.setIsMajor(createDTO.getIsMajor());
     entity.setParentId(createDTO.getParentId());
@@ -114,23 +117,9 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
    */
   @Override
   public List<ConfigurationTypeDTO> findByQuery(ConfigurationTypeQueryDTO queryDTO) {
-    List<ConfigurationType> entities;
-
-    if (queryDTO.getIsMajor() != null) {
-      entities = configurationTypeRepository.findByIsMajorTrueOrderBySortOrderAsc();
-    } else if (queryDTO.getParentId() != null) {
-      entities =
-          configurationTypeRepository.findByParentIdOrderBySortOrderAsc(queryDTO.getParentId());
-    } else if (queryDTO.getCode() != null) {
-      ConfigurationType entity =
-          configurationTypeRepository
-              .findByCode(queryDTO.getCode())
-              .orElseThrow(
-                  () -> new ResourceNotFoundException("ConfigurationType", queryDTO.getCode()));
-      return List.of(ConfigurationTypeDTO.fromEntity(entity));
-    } else {
-      entities = configurationTypeRepository.findAll();
-    }
+    List<ConfigurationType> entities =
+        configurationTypeRepository.findByQuery(
+            queryDTO.getName(), queryDTO.getIsMajor(), queryDTO.getParentId());
 
     return entities.stream().map(ConfigurationTypeDTO::fromEntity).collect(Collectors.toList());
   }

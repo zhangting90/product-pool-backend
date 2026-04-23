@@ -18,11 +18,6 @@ public class ConfigurationTypeCreateDTO {
   @Size(max = 100, message = "Name must not exceed 100 characters")
   private String name;
 
-  /** 配置类型编码 */
-  @NotBlank(message = "Code is required")
-  @Size(max = 50, message = "Code must not exceed 50 characters")
-  private String code;
-
   /** 配置类型描述 */
   @Size(max = 500, message = "Description must not exceed 500 characters")
   private String description;

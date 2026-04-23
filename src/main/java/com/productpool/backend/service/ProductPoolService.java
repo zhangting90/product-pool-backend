@@ -16,11 +16,4 @@ public interface ProductPoolService {
    * @return 产品池视图对象列表
    */
   List<ProductPoolVO> getProductPoolData();
-
-  /**
-   * 获取产品池数据（仅激活的产品）
-   *
-   * @return 产品池视图对象列表
-   */
-  List<ProductPoolVO> getActiveProductPoolData();
 }

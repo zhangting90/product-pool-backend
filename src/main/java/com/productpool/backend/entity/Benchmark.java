@@ -3,15 +3,14 @@ package com.productpool.backend.entity;
 import com.productpool.backend.util.IdGenerator;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /** 业绩对标实体类 对应数据库表 benchmark，用于管理业绩对标指标 关联到配置类型（小分类），一个配置类型下可有多个业绩对标 */
 @Entity
-@Table(
-    name = "benchmark",
-    uniqueConstraints = {@UniqueConstraint(name = "uk_benchmark_code", columnNames = "code")})
+@Table(name = "benchmark")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,13 +21,9 @@ public class Benchmark {
   @Column(name = "id", nullable = false, updatable = false)
   private Long id;
 
-  /** 业绩对标名称 */
-  @Column(name = "name", nullable = false, length = 100)
+  /** 业绩对标名称，全局唯一 */
+  @Column(name = "name", nullable = false, unique = true, length = 100)
   private String name;
-
-  /** 业绩对标编码，全局唯一 */
-  @Column(name = "code", nullable = false, unique = true, length = 50)
-  private String code;
 
   /** 业绩对标描述 */
   @Column(name = "description", length = 500)
@@ -50,7 +45,7 @@ public class Benchmark {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
-  /** 持久化前回调：自动生成ID、设置时间戳和默认排序 */
+  /** 持久化前回调：自动生成ID、设置时间戳，sortOrder默认为创建时间戳（秒） */
   @PrePersist
   protected void onCreate() {
     if (id == null) {
@@ -59,7 +54,7 @@ public class Benchmark {
     createdAt = LocalDateTime.now();
     updatedAt = LocalDateTime.now();
     if (sortOrder == null) {
-      sortOrder = 0;
+      sortOrder = (int) createdAt.toEpochSecond(ZoneOffset.UTC);
     }
   }
 

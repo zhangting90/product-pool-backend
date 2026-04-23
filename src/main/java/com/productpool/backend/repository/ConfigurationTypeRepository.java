@@ -2,9 +2,9 @@ package com.productpool.backend.repository;
 
 import com.productpool.backend.entity.ConfigurationType;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -14,14 +14,6 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface ConfigurationTypeRepository extends JpaRepository<ConfigurationType, Long> {
-
-  /**
-   * 根据编码查询配置类型
-   *
-   * @param code 配置类型编码
-   * @return 配置类型的Optional包装
-   */
-  Optional<ConfigurationType> findByCode(String code);
 
   /**
    * 查询所有大分类，按排序字段升序排列
@@ -64,10 +56,28 @@ public interface ConfigurationTypeRepository extends JpaRepository<Configuration
   List<ConfigurationType> findMajorTypesWithSubTypes();
 
   /**
-   * 判断指定编码的配置类型是否已存在
+   * 多条件动态查询配置类型（支持名称、是否大分类、父级ID）
    *
-   * @param code 配置类型编码
+   * @param name 配置类型名称（模糊匹配，可为null）
+   * @param isMajor 是否为主类型（精确匹配，可为null）
+   * @param parentId 父级配置类型ID（精确匹配，可为null）
+   * @return 配置类型列表
+   */
+  @Query(
+      "SELECT c FROM ConfigurationType c WHERE (:name IS NULL OR c.name LIKE %:name%) "
+          + "AND (:isMajor IS NULL OR c.isMajor = :isMajor) "
+          + "AND (:parentId IS NULL OR c.parentId = :parentId) "
+          + "ORDER BY c.sortOrder ASC")
+  List<ConfigurationType> findByQuery(
+      @Param("name") String name,
+      @Param("isMajor") Boolean isMajor,
+      @Param("parentId") Long parentId);
+
+  /**
+   * 判断指定名称的配置类型是否已存在
+   *
+   * @param name 配置类型名称
    * @return 存在返回true，否则返回false
    */
-  boolean existsByCode(String code);
+  boolean existsByName(String name);
 }

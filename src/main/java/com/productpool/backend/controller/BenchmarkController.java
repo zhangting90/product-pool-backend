@@ -36,15 +36,13 @@ public class BenchmarkController {
     return ResponseEntity.ok(Result.success(dto));
   }
 
-  /** 查询所有基准，支持按配置类型ID和编码筛选 GET /api/v1/benchmarks */
+  /** 查询所有基准，支持按配置类型ID筛选 GET /api/v1/benchmarks */
   @GetMapping
   public ResponseEntity<Result<List<BenchmarkDTO>>> findAll(
-      @RequestParam(required = false) Long configurationTypeId,
-      @RequestParam(required = false) String code) {
+      @RequestParam(required = false) Long configurationTypeId) {
 
     BenchmarkQueryDTO queryDTO = new BenchmarkQueryDTO();
     queryDTO.setConfigurationTypeId(configurationTypeId);
-    queryDTO.setCode(code);
 
     List<BenchmarkDTO> result = benchmarkService.findByQuery(queryDTO);
     return ResponseEntity.ok(Result.success(result));

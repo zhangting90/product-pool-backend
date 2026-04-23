@@ -19,9 +19,6 @@ public class BenchmarkDTO {
   /** 基准指标名称 */
   private String name;
 
-  /** 基准指标编码 */
-  private String code;
-
   /** 基准指标描述 */
   private String description;
 
@@ -53,7 +50,6 @@ public class BenchmarkDTO {
     BenchmarkDTO dto = new BenchmarkDTO();
     dto.setId(entity.getId());
     dto.setName(entity.getName());
-    dto.setCode(entity.getCode());
     dto.setDescription(entity.getDescription());
     dto.setConfigurationTypeId(entity.getConfigurationTypeId());
     dto.setSortOrder(entity.getSortOrder());

@@ -11,6 +11,7 @@ import com.productpool.backend.exception.DuplicateResourceException;
 import com.productpool.backend.exception.ResourceNotFoundException;
 import com.productpool.backend.repository.BenchmarkRepository;
 import com.productpool.backend.repository.ConfigurationTypeRepository;
+import com.productpool.backend.repository.StrategyTypeRepository;
 import com.productpool.backend.service.BenchmarkService;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,9 +45,9 @@ public class BenchmarkServiceImpl implements BenchmarkService {
   @Override
   @Transactional
   public BenchmarkDTO create(BenchmarkCreateDTO createDTO) {
-    // 检查code是否已存在
-    if (benchmarkRepository.existsByCode(createDTO.getCode())) {
-      throw new DuplicateResourceException("Benchmark", "code", createDTO.getCode());
+    // 检查name是否已存在
+    if (benchmarkRepository.existsByName(createDTO.getName())) {
+      throw new DuplicateResourceException("Benchmark", "name", createDTO.getName());
     }
 
     // 验证配置类型是否存在
@@ -60,7 +61,6 @@ public class BenchmarkServiceImpl implements BenchmarkService {
 
     Benchmark entity = new Benchmark();
     entity.setName(createDTO.getName());
-    entity.setCode(createDTO.getCode());
     entity.setDescription(createDTO.getDescription());
     entity.setConfigurationTypeId(configurationType.getId());
     entity.setSortOrder(createDTO.getSortOrder());
@@ -106,21 +106,8 @@ public class BenchmarkServiceImpl implements BenchmarkService {
    */
   @Override
   public List<BenchmarkDTO> findByQuery(BenchmarkQueryDTO queryDTO) {
-    List<Benchmark> entities;
-
-    if (queryDTO.getConfigurationTypeId() != null) {
-      entities =
-          benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAsc(
-              queryDTO.getConfigurationTypeId());
-    } else if (queryDTO.getCode() != null) {
-      Benchmark entity =
-          benchmarkRepository
-              .findByCode(queryDTO.getCode())
-              .orElseThrow(() -> new ResourceNotFoundException("Benchmark", queryDTO.getCode()));
-      return List.of(BenchmarkDTO.fromEntity(entity));
-    } else {
-      entities = benchmarkRepository.findAll();
-    }
+    List<Benchmark> entities =
+        benchmarkRepository.findByQuery(queryDTO.getName(), queryDTO.getConfigurationTypeId());
 
     return entities.stream().map(BenchmarkDTO::fromEntity).collect(Collectors.toList());
   }

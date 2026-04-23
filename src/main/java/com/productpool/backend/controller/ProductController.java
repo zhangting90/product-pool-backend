@@ -32,10 +32,10 @@ public class ProductController {
     return ResponseEntity.status(HttpStatus.CREATED).body(Result.success(dto));
   }
 
-  /** 根据ID查询产品 GET /api/v1/products/{id} */
-  @GetMapping("/{id}")
-  public ResponseEntity<Result<ProductDTO>> findById(@PathVariable Long id) {
-    ProductDTO dto = productService.findById(id);
+  /** 根据编码查询产品 GET /api/v1/products/{code} */
+  @GetMapping("/{code}")
+  public ResponseEntity<Result<ProductDTO>> findById(@PathVariable String code) {
+    ProductDTO dto = productService.findById(code);
     return ResponseEntity.ok(Result.success(dto));
   }
 
@@ -44,7 +44,7 @@ public class ProductController {
   public ResponseEntity<Result<PageResult<ProductDTO>>> findAll(
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size,
-      @RequestParam(defaultValue = "id") String sortBy,
+      @RequestParam(defaultValue = "code") String sortBy,
       @RequestParam(defaultValue = "asc") String sortDir) {
 
     Sort sort =
@@ -58,14 +58,12 @@ public class ProductController {
     return ResponseEntity.ok(Result.success(toPageResult(result)));
   }
 
-  /** 按条件搜索产品，支持名称、编码、策略类型、风险等级、状态筛选 GET /api/v1/products/search */
+  /** 按条件搜索产品，支持名称、编码、策略类型筛选 GET /api/v1/products/search */
   @GetMapping("/search")
   public ResponseEntity<Result<PageResult<ProductDTO>>> search(
       @RequestParam(required = false) String name,
       @RequestParam(required = false) String code,
       @RequestParam(required = false) Long strategyTypeId,
-      @RequestParam(required = false) String riskLevel,
-      @RequestParam(required = false) Boolean isActive,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
 
@@ -73,8 +71,6 @@ public class ProductController {
     queryDTO.setName(name);
     queryDTO.setCode(code);
     queryDTO.setStrategyTypeId(strategyTypeId);
-    queryDTO.setRiskLevel(riskLevel);
-    queryDTO.setIsActive(isActive);
 
     Pageable pageable = PageRequest.of(page, size, Sort.by("sortOrder").ascending());
     Page<ProductDTO> result = productService.findByQuery(queryDTO, pageable);
@@ -82,18 +78,18 @@ public class ProductController {
     return ResponseEntity.ok(Result.success(toPageResult(result)));
   }
 
-  /** 更新产品 PUT /api/v1/products/{id} */
-  @PutMapping("/{id}")
+  /** 更新产品 PUT /api/v1/products/{code} */
+  @PutMapping("/{code}")
   public ResponseEntity<Result<ProductDTO>> update(
-      @PathVariable Long id, @Valid @RequestBody ProductUpdateDTO updateDTO) {
-    ProductDTO dto = productService.update(id, updateDTO);
+      @PathVariable String code, @Valid @RequestBody ProductUpdateDTO updateDTO) {
+    ProductDTO dto = productService.update(code, updateDTO);
     return ResponseEntity.ok(Result.success(dto));
   }
 
-  /** 删除产品 DELETE /api/v1/products/{id} */
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Result<Void>> delete(@PathVariable Long id) {
-    productService.delete(id);
+  /** 删除产品 DELETE /api/v1/products/{code} */
+  @DeleteMapping("/{code}")
+  public ResponseEntity<Result<Void>> delete(@PathVariable String code) {
+    productService.delete(code);
     return ResponseEntity.noContent().build();
   }
 
@@ -106,17 +102,6 @@ public class ProductController {
 
     Pageable pageable = PageRequest.of(page, size, Sort.by("sortOrder").ascending());
     Page<ProductDTO> result = productService.findByStrategyTypeId(strategyTypeId, pageable);
-
-    return ResponseEntity.ok(Result.success(toPageResult(result)));
-  }
-
-  /** 分页查询活跃状态的产品 GET /api/v1/products/active */
-  @GetMapping("/active")
-  public ResponseEntity<Result<PageResult<ProductDTO>>> findActiveProducts(
-      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-
-    Pageable pageable = PageRequest.of(page, size, Sort.by("sortOrder").ascending());
-    Page<ProductDTO> result = productService.findActiveProducts(pageable);
 
     return ResponseEntity.ok(Result.success(toPageResult(result)));
   }
