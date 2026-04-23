@@ -170,7 +170,7 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
   @Override
   public List<StrategyTypeDTO> findByBenchmarkId(Long benchmarkId) {
     List<StrategyType> entities =
-        strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAsc(benchmarkId);
+        strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAscUpdatedAtAsc(benchmarkId);
     return entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
   }
 }

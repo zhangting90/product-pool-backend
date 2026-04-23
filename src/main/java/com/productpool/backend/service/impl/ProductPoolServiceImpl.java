@@ -38,7 +38,7 @@ public class ProductPoolServiceImpl implements ProductPoolService {
   @Override
   public List<ProductPoolVO> getProductPoolData() {
     List<ConfigurationType> majorTypes =
-        configurationTypeRepository.findByIsMajorTrueOrderBySortOrderAsc();
+        configurationTypeRepository.findByIsMajorTrueOrderBySortOrderAscUpdatedAtAsc();
 
     return majorTypes.stream().map(this::buildProductPoolVO).collect(Collectors.toList());
   }
@@ -52,7 +52,8 @@ public class ProductPoolServiceImpl implements ProductPoolService {
     vo.setSortOrder(majorType.getSortOrder());
 
     List<ConfigurationType> subTypes =
-        configurationTypeRepository.findByParentIdOrderBySortOrderAsc(majorType.getId());
+        configurationTypeRepository.findByParentIdOrderBySortOrderAscUpdatedAtAsc(
+            majorType.getId());
 
     List<ProductPoolVO.ConfigurationTypeVO> children =
         subTypes.stream().map(this::buildConfigurationTypeVO).collect(Collectors.toList());
@@ -68,7 +69,8 @@ public class ProductPoolServiceImpl implements ProductPoolService {
     vo.setSortOrder(subType.getSortOrder());
 
     List<Benchmark> benchmarks =
-        benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAsc(subType.getId());
+        benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAscUpdatedAtAsc(
+            subType.getId());
 
     List<ProductPoolVO.BenchmarkVO> benchmarkVOs =
         benchmarks.stream().map(this::buildBenchmarkVO).collect(Collectors.toList());
@@ -84,7 +86,7 @@ public class ProductPoolServiceImpl implements ProductPoolService {
     vo.setSortOrder(benchmark.getSortOrder());
 
     List<StrategyType> strategyTypes =
-        strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAsc(benchmark.getId());
+        strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAscUpdatedAtAsc(benchmark.getId());
 
     List<ProductPoolVO.StrategyTypeVO> strategyTypeVOs =
         strategyTypes.stream().map(this::buildStrategyTypeVO).collect(Collectors.toList());

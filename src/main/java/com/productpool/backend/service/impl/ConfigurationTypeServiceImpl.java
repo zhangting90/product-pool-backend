@@ -239,7 +239,7 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
   @Override
   public List<ConfigurationTypeDTO> findMajorTypes() {
     List<ConfigurationType> entities =
-        configurationTypeRepository.findByIsMajorTrueOrderBySortOrderAsc();
+        configurationTypeRepository.findByIsMajorTrueOrderBySortOrderAscUpdatedAtAsc();
     return entities.stream().map(ConfigurationTypeDTO::fromEntity).collect(Collectors.toList());
   }
 }

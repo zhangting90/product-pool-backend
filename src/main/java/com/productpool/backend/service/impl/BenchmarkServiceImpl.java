@@ -179,7 +179,8 @@ public class BenchmarkServiceImpl implements BenchmarkService {
   @Override
   public List<BenchmarkDTO> findByConfigurationTypeId(Long configurationTypeId) {
     List<Benchmark> entities =
-        benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAsc(configurationTypeId);
+        benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAscUpdatedAtAsc(
+            configurationTypeId);
     return entities.stream().map(BenchmarkDTO::fromEntity).collect(Collectors.toList());
   }
 }
