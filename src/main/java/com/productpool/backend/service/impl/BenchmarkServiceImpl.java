@@ -193,8 +193,7 @@ public class BenchmarkServiceImpl implements BenchmarkService {
 
     // 检查是否有关联的策略类型
     if (strategyTypeRepository.existsByBenchmarkId(id)) {
-      throw new BusinessLogicException(
-          "Cannot delete benchmark with associated strategy types. Please delete strategy types first.");
+      throw new BusinessLogicException("该业绩对标下存在关联策略类型，请先删除策略类型");
     }
 
     benchmarkRepository.delete(entity);

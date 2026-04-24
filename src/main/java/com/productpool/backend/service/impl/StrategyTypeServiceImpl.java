@@ -244,8 +244,7 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
 
     // 检查是否有关联的产品
     if (productRepository.existsByStrategyTypeId(id)) {
-      throw new BusinessLogicException(
-          "Cannot delete strategy type with associated products. Please delete products first.");
+      throw new BusinessLogicException("该策略类型下存在关联产品，请先删除产品");
     }
 
     strategyTypeRepository.delete(entity);

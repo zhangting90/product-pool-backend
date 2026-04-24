@@ -177,14 +177,12 @@ public class ConfigurationTypeServiceImpl implements ConfigurationTypeService {
     List<ConfigurationType> children =
         configurationTypeRepository.findByParentIdOrderBySortOrderAscUpdatedAtAsc(id);
     if (!children.isEmpty()) {
-      throw new BusinessLogicException(
-          "Cannot delete configuration type with child types. Please delete child types first.");
+      throw new BusinessLogicException("该分类下存在子分类，请先删除子分类");
     }
 
     // 检查是否有关联的业绩对标
     if (benchmarkRepository.existsByConfigurationTypeId(id)) {
-      throw new BusinessLogicException(
-          "Cannot delete configuration type with associated benchmarks. Please delete benchmarks first.");
+      throw new BusinessLogicException("该分类下存在业绩对标，请先删除业绩对标");
     }
 
     configurationTypeRepository.delete(entity);
