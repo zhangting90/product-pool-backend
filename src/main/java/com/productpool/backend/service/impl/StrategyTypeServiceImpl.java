@@ -5,14 +5,18 @@ import com.productpool.backend.dto.StrategyTypeDTO;
 import com.productpool.backend.dto.StrategyTypeQueryDTO;
 import com.productpool.backend.dto.StrategyTypeUpdateDTO;
 import com.productpool.backend.entity.Benchmark;
+import com.productpool.backend.entity.ConfigurationType;
 import com.productpool.backend.entity.StrategyType;
 import com.productpool.backend.exception.BusinessLogicException;
 import com.productpool.backend.exception.ResourceNotFoundException;
 import com.productpool.backend.repository.BenchmarkRepository;
+import com.productpool.backend.repository.ConfigurationTypeRepository;
 import com.productpool.backend.repository.ProductRepository;
 import com.productpool.backend.repository.StrategyTypeRepository;
 import com.productpool.backend.service.StrategyTypeService;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +33,72 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
 
   private final StrategyTypeRepository strategyTypeRepository;
   private final BenchmarkRepository benchmarkRepository;
+  private final ConfigurationTypeRepository configurationTypeRepository;
   private final ProductRepository productRepository;
+
+  /** 批量填充业绩对标名称：避免 N+1 查询 */
+  private List<StrategyTypeDTO> enrichWithBenchmarkName(List<StrategyTypeDTO> dtos) {
+    if (dtos.isEmpty()) return dtos;
+    List<Long> bmIds =
+        dtos.stream().map(StrategyTypeDTO::getBenchmarkId).distinct().collect(Collectors.toList());
+    Map<Long, String> nameMap =
+        benchmarkRepository.findAllById(bmIds).stream()
+            .collect(Collectors.toMap(Benchmark::getId, Benchmark::getName));
+    dtos.forEach(dto -> dto.setBenchmarkName(nameMap.get(dto.getBenchmarkId())));
+    return dtos;
+  }
+
+  /** 填充单个 DTO 的业绩对标名称 */
+  private StrategyTypeDTO enrichSingleWithBenchmarkName(StrategyTypeDTO dto) {
+    benchmarkRepository
+        .findById(dto.getBenchmarkId())
+        .ifPresent(bm -> dto.setBenchmarkName(bm.getName()));
+    return dto;
+  }
+
+  /**
+   * 根据配置类型层级解析出 benchmarkId 列表
+   *
+   * <p>优先级：benchmarkId > subTypeId > majorTypeId，未指定则返回 null（不过滤）。
+   *
+   * @param queryDTO 查询条件
+   * @return benchmarkId 列表，null 表示不过滤
+   */
+  private List<Long> resolveBenchmarkIds(StrategyTypeQueryDTO queryDTO) {
+    // 1. 直接指定了 benchmarkId
+    if (queryDTO.getBenchmarkId() != null) {
+      return Collections.singletonList(queryDTO.getBenchmarkId());
+    }
+
+    // 2. 指定了子分类ID：查该子分类下所有业绩对标
+    if (queryDTO.getSubTypeId() != null) {
+      List<Benchmark> benchmarks =
+          benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAscUpdatedAtAsc(
+              queryDTO.getSubTypeId());
+      return benchmarks.stream().map(Benchmark::getId).collect(Collectors.toList());
+    }
+
+    // 3. 指定了大分类ID：查该大分类下所有子分类，再查子分类下所有业绩对标
+    if (queryDTO.getMajorTypeId() != null) {
+      List<ConfigurationType> subTypes =
+          configurationTypeRepository.findAll().stream()
+              .filter(ct -> !ct.getIsMajor() && queryDTO.getMajorTypeId().equals(ct.getParentId()))
+              .collect(Collectors.toList());
+      if (subTypes.isEmpty()) {
+        return Collections.emptyList();
+      }
+      List<Long> subTypeIds =
+          subTypes.stream().map(ConfigurationType::getId).collect(Collectors.toList());
+      List<Benchmark> benchmarks =
+          benchmarkRepository.findAll().stream()
+              .filter(bm -> subTypeIds.contains(bm.getConfigurationTypeId()))
+              .collect(Collectors.toList());
+      return benchmarks.stream().map(Benchmark::getId).collect(Collectors.toList());
+    }
+
+    // 4. 未指定任何筛选条件：返回 null，不过滤
+    return null;
+  }
 
   /**
    * 创建策略类型
@@ -57,7 +126,9 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
     entity.setSortOrder(createDTO.getSortOrder());
 
     StrategyType saved = strategyTypeRepository.save(entity);
-    return StrategyTypeDTO.fromEntity(saved);
+    StrategyTypeDTO dto = StrategyTypeDTO.fromEntity(saved);
+    dto.setBenchmarkName(benchmark.getName());
+    return dto;
   }
 
   /**
@@ -73,7 +144,7 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
         strategyTypeRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("StrategyType", id));
-    return StrategyTypeDTO.fromEntity(entity);
+    return enrichSingleWithBenchmarkName(StrategyTypeDTO.fromEntity(entity));
   }
 
   /**
@@ -84,23 +155,42 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
   @Override
   public List<StrategyTypeDTO> findAll() {
     List<StrategyType> entities = strategyTypeRepository.findAll();
-    return entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
+    List<StrategyTypeDTO> dtos =
+        entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
+    return enrichWithBenchmarkName(dtos);
   }
 
   /**
    * 根据条件查询策略类型
    *
-   * <p>支持按业绩对标ID查询，未指定条件则查询全部。
+   * <p>支持按大分类、子分类、业绩对标ID进行多级筛选。 优先级：benchmarkId > subTypeId > majorTypeId。
    *
    * @param queryDTO 查询条件DTO
    * @return 策略类型DTO列表
    */
   @Override
   public List<StrategyTypeDTO> findByQuery(StrategyTypeQueryDTO queryDTO) {
-    List<StrategyType> entities =
-        strategyTypeRepository.findByQuery(queryDTO.getName(), queryDTO.getBenchmarkId());
+    // 解析出需要筛选的 benchmarkId 列表
+    List<Long> benchmarkIds = resolveBenchmarkIds(queryDTO);
 
-    return entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
+    List<StrategyType> entities;
+    if (benchmarkIds == null) {
+      // 未指定任何筛选条件，查询全部
+      entities = strategyTypeRepository.findByQuery(queryDTO.getName(), null);
+    } else if (benchmarkIds.isEmpty()) {
+      // 筛选条件无匹配的业绩对标，返回空列表
+      return Collections.emptyList();
+    } else {
+      // 按 benchmarkId 列表过滤
+      entities =
+          strategyTypeRepository.findByQuery(queryDTO.getName(), null).stream()
+              .filter(st -> benchmarkIds.contains(st.getBenchmarkId()))
+              .collect(Collectors.toList());
+    }
+
+    List<StrategyTypeDTO> dtos =
+        entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
+    return enrichWithBenchmarkName(dtos);
   }
 
   /**
@@ -132,7 +222,7 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
     }
 
     StrategyType updated = strategyTypeRepository.save(entity);
-    return StrategyTypeDTO.fromEntity(updated);
+    return enrichSingleWithBenchmarkName(StrategyTypeDTO.fromEntity(updated));
   }
 
   /**
@@ -171,6 +261,8 @@ public class StrategyTypeServiceImpl implements StrategyTypeService {
   public List<StrategyTypeDTO> findByBenchmarkId(Long benchmarkId) {
     List<StrategyType> entities =
         strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAscUpdatedAtAsc(benchmarkId);
-    return entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
+    List<StrategyTypeDTO> dtos =
+        entities.stream().map(StrategyTypeDTO::fromEntity).collect(Collectors.toList());
+    return enrichWithBenchmarkName(dtos);
   }
 }

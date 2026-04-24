@@ -29,6 +29,14 @@ public class ProductServiceImpl implements ProductService {
   private final ProductRepository productRepository;
   private final StrategyTypeRepository strategyTypeRepository;
 
+  /** 填充单个 DTO 的策略类型名称 */
+  private ProductDTO enrichSingleWithStrategyTypeName(ProductDTO dto) {
+    strategyTypeRepository
+        .findById(dto.getStrategyTypeId())
+        .ifPresent(st -> dto.setStrategyTypeName(st.getName()));
+    return dto;
+  }
+
   /**
    * 创建产品
    *
@@ -62,7 +70,9 @@ public class ProductServiceImpl implements ProductService {
     entity.setSortOrder(createDTO.getSortOrder());
 
     Product saved = productRepository.save(entity);
-    return ProductDTO.fromEntity(saved);
+    ProductDTO dto = ProductDTO.fromEntity(saved);
+    dto.setStrategyTypeName(strategyType.getName());
+    return dto;
   }
 
   /**
@@ -78,7 +88,7 @@ public class ProductServiceImpl implements ProductService {
         productRepository
             .findById(code)
             .orElseThrow(() -> new ResourceNotFoundException("Product", code));
-    return ProductDTO.fromEntity(entity);
+    return enrichSingleWithStrategyTypeName(ProductDTO.fromEntity(entity));
   }
 
   /**
@@ -90,7 +100,7 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<ProductDTO> findAll(Pageable pageable) {
     Page<Product> entities = productRepository.findAll(pageable);
-    return entities.map(ProductDTO::fromEntity);
+    return entities.map(entity -> enrichSingleWithStrategyTypeName(ProductDTO.fromEntity(entity)));
   }
 
   /**
@@ -106,8 +116,12 @@ public class ProductServiceImpl implements ProductService {
   public Page<ProductDTO> findByQuery(ProductQueryDTO queryDTO, Pageable pageable) {
     Page<Product> entities =
         productRepository.findByQuery(
-            queryDTO.getName(), queryDTO.getCode(), queryDTO.getStrategyTypeId(), pageable);
-    return entities.map(ProductDTO::fromEntity);
+            queryDTO.getName(),
+            queryDTO.getCode(),
+            queryDTO.getStrategyTypeId(),
+            queryDTO.getStrategyTypeIds(),
+            pageable);
+    return entities.map(entity -> enrichSingleWithStrategyTypeName(ProductDTO.fromEntity(entity)));
   }
 
   /**
@@ -139,7 +153,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     Product updated = productRepository.save(entity);
-    return ProductDTO.fromEntity(updated);
+    return enrichSingleWithStrategyTypeName(ProductDTO.fromEntity(updated));
   }
 
   /**
@@ -168,6 +182,6 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<ProductDTO> findByStrategyTypeId(Long strategyTypeId, Pageable pageable) {
     Page<Product> entities = productRepository.findByStrategyTypeId(strategyTypeId, pageable);
-    return entities.map(ProductDTO::fromEntity);
+    return entities.map(entity -> enrichSingleWithStrategyTypeName(ProductDTO.fromEntity(entity)));
   }
 }

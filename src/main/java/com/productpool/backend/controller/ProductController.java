@@ -58,12 +58,13 @@ public class ProductController {
     return ResponseEntity.ok(Result.success(toPageResult(result)));
   }
 
-  /** 按条件搜索产品，支持名称、编码、策略类型筛选 GET /api/v1/products/search */
+  /** 按条件搜索产品，支持名称、编码、策略类型ID列表筛选 GET /api/v1/products/search */
   @GetMapping("/search")
   public ResponseEntity<Result<PageResult<ProductDTO>>> search(
       @RequestParam(required = false) String name,
       @RequestParam(required = false) String code,
       @RequestParam(required = false) Long strategyTypeId,
+      @RequestParam(required = false) List<Long> strategyTypeIds,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
 
@@ -71,6 +72,7 @@ public class ProductController {
     queryDTO.setName(name);
     queryDTO.setCode(code);
     queryDTO.setStrategyTypeId(strategyTypeId);
+    queryDTO.setStrategyTypeIds(strategyTypeIds);
 
     Pageable pageable =
         PageRequest.of(
@@ -92,7 +94,7 @@ public class ProductController {
   @DeleteMapping("/{code}")
   public ResponseEntity<Result<Void>> delete(@PathVariable String code) {
     productService.delete(code);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(Result.success(null));
   }
 
   /** 根据策略类型ID分页查询产品 GET /api/v1/products/strategy-types/{strategyTypeId} */

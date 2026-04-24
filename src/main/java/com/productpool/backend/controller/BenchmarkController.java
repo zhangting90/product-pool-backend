@@ -60,7 +60,7 @@ public class BenchmarkController {
   @DeleteMapping("/{id}")
   public ResponseEntity<Result<Void>> delete(@PathVariable Long id) {
     benchmarkService.delete(id);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(Result.success(null));
   }
 
   /** 根据配置类型ID查询基准列表 GET /api/v1/benchmarks/configuration-types/{configurationTypeId} */

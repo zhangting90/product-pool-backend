@@ -14,6 +14,7 @@ import com.productpool.backend.repository.ConfigurationTypeRepository;
 import com.productpool.backend.repository.StrategyTypeRepository;
 import com.productpool.backend.service.BenchmarkService;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,29 @@ public class BenchmarkServiceImpl implements BenchmarkService {
   private final BenchmarkRepository benchmarkRepository;
   private final ConfigurationTypeRepository configurationTypeRepository;
   private final StrategyTypeRepository strategyTypeRepository;
+
+  /** 批量填充配置类型名称：一次性查询所有相关的配置类型，避免 N+1 查询 */
+  private List<BenchmarkDTO> enrichWithConfigurationTypeName(List<BenchmarkDTO> dtos) {
+    if (dtos.isEmpty()) return dtos;
+    List<Long> ctIds =
+        dtos.stream()
+            .map(BenchmarkDTO::getConfigurationTypeId)
+            .distinct()
+            .collect(Collectors.toList());
+    Map<Long, String> nameMap =
+        configurationTypeRepository.findAllById(ctIds).stream()
+            .collect(Collectors.toMap(ConfigurationType::getId, ConfigurationType::getName));
+    dtos.forEach(dto -> dto.setConfigurationTypeName(nameMap.get(dto.getConfigurationTypeId())));
+    return dtos;
+  }
+
+  /** 填充单个 DTO 的配置类型名称 */
+  private BenchmarkDTO enrichSingleWithConfigurationTypeName(BenchmarkDTO dto) {
+    configurationTypeRepository
+        .findById(dto.getConfigurationTypeId())
+        .ifPresent(ct -> dto.setConfigurationTypeName(ct.getName()));
+    return dto;
+  }
 
   /**
    * 创建业绩对标
@@ -66,7 +90,9 @@ public class BenchmarkServiceImpl implements BenchmarkService {
     entity.setSortOrder(createDTO.getSortOrder());
 
     Benchmark saved = benchmarkRepository.save(entity);
-    return BenchmarkDTO.fromEntity(saved);
+    BenchmarkDTO dto = BenchmarkDTO.fromEntity(saved);
+    dto.setConfigurationTypeName(configurationType.getName());
+    return dto;
   }
 
   /**
@@ -82,7 +108,7 @@ public class BenchmarkServiceImpl implements BenchmarkService {
         benchmarkRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Benchmark", id));
-    return BenchmarkDTO.fromEntity(entity);
+    return enrichSingleWithConfigurationTypeName(BenchmarkDTO.fromEntity(entity));
   }
 
   /**
@@ -93,7 +119,9 @@ public class BenchmarkServiceImpl implements BenchmarkService {
   @Override
   public List<BenchmarkDTO> findAll() {
     List<Benchmark> entities = benchmarkRepository.findAll();
-    return entities.stream().map(BenchmarkDTO::fromEntity).collect(Collectors.toList());
+    List<BenchmarkDTO> dtos =
+        entities.stream().map(BenchmarkDTO::fromEntity).collect(Collectors.toList());
+    return enrichWithConfigurationTypeName(dtos);
   }
 
   /**
@@ -109,7 +137,9 @@ public class BenchmarkServiceImpl implements BenchmarkService {
     List<Benchmark> entities =
         benchmarkRepository.findByQuery(queryDTO.getName(), queryDTO.getConfigurationTypeId());
 
-    return entities.stream().map(BenchmarkDTO::fromEntity).collect(Collectors.toList());
+    List<BenchmarkDTO> dtos =
+        entities.stream().map(BenchmarkDTO::fromEntity).collect(Collectors.toList());
+    return enrichWithConfigurationTypeName(dtos);
   }
 
   /**
@@ -141,7 +171,7 @@ public class BenchmarkServiceImpl implements BenchmarkService {
     }
 
     Benchmark updated = benchmarkRepository.save(entity);
-    return BenchmarkDTO.fromEntity(updated);
+    return enrichSingleWithConfigurationTypeName(BenchmarkDTO.fromEntity(updated));
   }
 
   /**
@@ -174,13 +204,15 @@ public class BenchmarkServiceImpl implements BenchmarkService {
    * 根据配置类型ID查询业绩对标
    *
    * @param configurationTypeId 配置类型ID
-   * @return 业绩对标DTO列表，按排序字段升序排列
+   * @return 业绩对标列表，按排序字段升序排列
    */
   @Override
   public List<BenchmarkDTO> findByConfigurationTypeId(Long configurationTypeId) {
     List<Benchmark> entities =
         benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAscUpdatedAtAsc(
             configurationTypeId);
-    return entities.stream().map(BenchmarkDTO::fromEntity).collect(Collectors.toList());
+    List<BenchmarkDTO> dtos =
+        entities.stream().map(BenchmarkDTO::fromEntity).collect(Collectors.toList());
+    return enrichWithConfigurationTypeName(dtos);
   }
 }

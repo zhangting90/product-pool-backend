@@ -18,4 +18,10 @@ public class StrategyTypeQueryDTO {
 
   /** 所属基准指标ID */
   private Long benchmarkId;
+
+  /** 配置类型大分类ID（可选，用于多级筛选） */
+  private Long majorTypeId;
+
+  /** 配置类型子分类ID（可选，用于多级筛选） */
+  private Long subTypeId;
 }

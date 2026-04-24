@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/** 策略类型管理控制器 提供策略类型的增删改查 API 接口，支持按基准筛选 基础路径: /api/v1/strategy-types */
+/** 策略类型管理控制器 提供策略类型的增删改查 API 接口，支持按配置类型层级和基准筛选 基础路径: /api/v1/strategy-types */
 @RestController
 @RequestMapping("/api/v1/strategy-types")
 @RequiredArgsConstructor
@@ -36,13 +36,17 @@ public class StrategyTypeController {
     return ResponseEntity.ok(Result.success(dto));
   }
 
-  /** 查询所有策略类型，支持按基准ID筛选 GET /api/v1/strategy-types */
+  /** 查询所有策略类型，支持按大分类、子分类、基准ID筛选 GET /api/v1/strategy-types */
   @GetMapping
   public ResponseEntity<Result<List<StrategyTypeDTO>>> findAll(
-      @RequestParam(required = false) Long benchmarkId) {
+      @RequestParam(required = false) Long benchmarkId,
+      @RequestParam(required = false) Long majorTypeId,
+      @RequestParam(required = false) Long subTypeId) {
 
     StrategyTypeQueryDTO queryDTO = new StrategyTypeQueryDTO();
     queryDTO.setBenchmarkId(benchmarkId);
+    queryDTO.setMajorTypeId(majorTypeId);
+    queryDTO.setSubTypeId(subTypeId);
 
     List<StrategyTypeDTO> result = strategyTypeService.findByQuery(queryDTO);
     return ResponseEntity.ok(Result.success(result));
@@ -60,7 +64,7 @@ public class StrategyTypeController {
   @DeleteMapping("/{id}")
   public ResponseEntity<Result<Void>> delete(@PathVariable Long id) {
     strategyTypeService.delete(id);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(Result.success(null));
   }
 
   /** 根据基准ID查询策略类型列表 GET /api/v1/strategy-types/benchmarks/{benchmarkId} */

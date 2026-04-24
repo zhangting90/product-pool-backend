@@ -58,7 +58,7 @@ public class ConfigurationTypeController {
   @DeleteMapping("/{id}")
   public ResponseEntity<Result<Void>> delete(@PathVariable Long id) {
     configurationTypeService.delete(id);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(Result.success(null));
   }
 
   /** 获取配置类型层级结构（主要类型及其子类型） GET /api/v1/configuration-types/hierarchy */

@@ -54,10 +54,12 @@ public interface ProductRepository extends JpaRepository<Product, String> {
   @Query(
       "SELECT p FROM Product p WHERE (:name IS NULL OR p.name LIKE %:name%) "
           + "AND (:code IS NULL OR p.code LIKE %:code%) "
-          + "AND (:strategyTypeId IS NULL OR p.strategyTypeId = :strategyTypeId)")
+          + "AND (:strategyTypeId IS NULL OR p.strategyTypeId = :strategyTypeId) "
+          + "AND (:strategyTypeIds IS NULL OR p.strategyTypeId IN :strategyTypeIds)")
   Page<Product> findByQuery(
       @Param("name") String name,
       @Param("code") String code,
       @Param("strategyTypeId") Long strategyTypeId,
+      @Param("strategyTypeIds") List<Long> strategyTypeIds,
       Pageable pageable);
 }
