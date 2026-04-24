@@ -17,7 +17,13 @@ public class ProductQueryDTO {
   /** 产品编码（模糊查询） */
   private String code;
 
-  /** 所属策略类型ID（单个，兼容旧接口） */
+  /** 配置分类ID（支持直接按分类筛选） */
+  private Long configurationTypeId;
+
+  /** 业绩对标ID（支持直接按业绩对标筛选） */
+  private Long benchmarkId;
+
+  /** 所属策略类型ID（单个） */
   private Long strategyTypeId;
 
   /** 所属策略类型ID列表（批量，支持多级筛选） */

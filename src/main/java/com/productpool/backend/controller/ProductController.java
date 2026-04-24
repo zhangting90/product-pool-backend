@@ -58,21 +58,23 @@ public class ProductController {
     return ResponseEntity.ok(Result.success(toPageResult(result)));
   }
 
-  /** 按条件搜索产品，支持名称、编码、策略类型ID列表筛选 GET /api/v1/products/search */
+  /** 按条件搜索产品，支持分类、业绩对标、策略类型、名称、编码多级筛选 GET /api/v1/products/search */
   @GetMapping("/search")
   public ResponseEntity<Result<PageResult<ProductDTO>>> search(
       @RequestParam(required = false) String name,
       @RequestParam(required = false) String code,
+      @RequestParam(required = false) Long configurationTypeId,
+      @RequestParam(required = false) Long benchmarkId,
       @RequestParam(required = false) Long strategyTypeId,
-      @RequestParam(required = false) List<Long> strategyTypeIds,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
 
     ProductQueryDTO queryDTO = new ProductQueryDTO();
     queryDTO.setName(name);
     queryDTO.setCode(code);
+    queryDTO.setConfigurationTypeId(configurationTypeId);
+    queryDTO.setBenchmarkId(benchmarkId);
     queryDTO.setStrategyTypeId(strategyTypeId);
-    queryDTO.setStrategyTypeIds(strategyTypeIds);
 
     Pageable pageable =
         PageRequest.of(
