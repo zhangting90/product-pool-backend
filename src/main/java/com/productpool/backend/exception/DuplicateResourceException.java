@@ -10,6 +10,6 @@ public class DuplicateResourceException extends RuntimeException {
 
   /** 根据资源名称、字段名和字段值构造异常，生成标准错误信息 */
   public DuplicateResourceException(String resourceName, String fieldName, Object fieldValue) {
-    super(String.format("%s already exists with %s: %s", resourceName, fieldName, fieldValue));
+    super(String.format("%s已存在，%s：%s", resourceName, fieldName, fieldValue));
   }
 }

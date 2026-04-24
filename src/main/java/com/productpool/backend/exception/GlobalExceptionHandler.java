@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(ResourceNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public Result<Void> handleResourceNotFoundException(ResourceNotFoundException ex) {
-    log.warn("Resource not found: {}", ex.getMessage());
+    log.warn("资源未找到: {}", ex.getMessage());
     return Result.error(404, ex.getMessage());
   }
 
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(DuplicateResourceException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
   public Result<Void> handleDuplicateResourceException(DuplicateResourceException ex) {
-    log.warn("Duplicate resource: {}", ex.getMessage());
+    log.warn("资源重复: {}", ex.getMessage());
     return Result.error(409, ex.getMessage());
   }
 
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(BusinessLogicException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public Result<Void> handleBusinessLogicException(BusinessLogicException ex) {
-    log.warn("Business logic error: {}", ex.getMessage());
+    log.warn("业务逻辑错误: {}", ex.getMessage());
     return Result.error(400, ex.getMessage());
   }
 
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public Result<Map<String, String>> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException ex) {
-    log.warn("Validation error: {}", ex.getMessage());
+    log.warn("参数校验失败: {}", ex.getMessage());
     Map<String, String> errors = new HashMap<>();
     ex.getBindingResult()
         .getAllErrors()
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
               String errorMessage = error.getDefaultMessage();
               errors.put(fieldName, errorMessage);
             });
-    return Result.error(400, "Validation failed");
+    return Result.error(400, "参数校验失败");
   }
 
   /** 处理约束违反异常（如 @RequestParam 校验失败），收集违规字段信息 */
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public Result<Map<String, String>> handleConstraintViolationException(
       ConstraintViolationException ex) {
-    log.warn("Constraint violation: {}", ex.getMessage());
+    log.warn("约束违反: {}", ex.getMessage());
     Map<String, String> errors =
         ex.getConstraintViolations().stream()
             .collect(
@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
                     violation -> violation.getPropertyPath().toString(),
                     ConstraintViolation::getMessage,
                     (existing, replacement) -> existing));
-    return Result.error(400, "Validation failed");
+    return Result.error(400, "参数校验失败");
   }
 
   /** 处理缺少请求参数异常 */
@@ -88,9 +88,8 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public Result<Void> handleMissingServletRequestParameterException(
       MissingServletRequestParameterException ex) {
-    log.warn("Missing request parameter: {}", ex.getMessage());
-    return Result.error(
-        400, String.format("Missing required parameter: %s", ex.getParameterName()));
+    log.warn("缺少请求参数: {}", ex.getMessage());
+    return Result.error(400, String.format("缺少必要参数：%s", ex.getParameterName()));
   }
 
   /** 处理HTTP请求方法不支持异常，返回 405 */
@@ -98,16 +97,16 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
   public Result<Void> handleHttpRequestMethodNotSupportedException(
       HttpRequestMethodNotSupportedException ex) {
-    log.warn("Method not supported: {}", ex.getMessage());
-    return Result.error(405, String.format("Method not supported: %s", ex.getMethod()));
+    log.warn("请求方法不支持: {}", ex.getMessage());
+    return Result.error(405, String.format("不支持的请求方法：%s", ex.getMethod()));
   }
 
   /** 处理请求体解析异常（JSON格式错误等） */
   @ExceptionHandler(HttpMessageNotReadableException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public Result<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-    log.warn("Message not readable: {}", ex.getMessage());
-    return Result.error(400, "Invalid request body");
+    log.warn("请求体解析失败: {}", ex.getMessage());
+    return Result.error(400, "请求体格式错误，请检查JSON格式");
   }
 
   /** 处理参数类型不匹配异常（如传入字符串但期望数字） */
@@ -115,23 +114,23 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public Result<Void> handleMethodArgumentTypeMismatchException(
       MethodArgumentTypeMismatchException ex) {
-    log.warn("Type mismatch: {}", ex.getMessage());
-    return Result.error(400, String.format("Invalid parameter type for '%s'", ex.getName()));
+    log.warn("参数类型不匹配: {}", ex.getMessage());
+    return Result.error(400, String.format("参数 '%s' 类型不正确", ex.getName()));
   }
 
   /** 处理数据完整性违反异常（唯一约束冲突、外键约束违反等） */
   @ExceptionHandler(DataIntegrityViolationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public Result<Void> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
-    log.warn("Data integrity violation: {}", ex.getMessage());
-    String message = "Data integrity violation";
+    log.warn("数据完整性错误: {}", ex.getMessage());
+    String message = "数据完整性约束违反";
     if (ex.getMostSpecificCause() != null) {
       String causeMessage = ex.getMostSpecificCause().getMessage();
       if (causeMessage != null) {
         if (causeMessage.contains("unique constraint") || causeMessage.contains("duplicate key")) {
-          message = "Duplicate entry detected";
+          message = "数据重复，唯一约束冲突";
         } else if (causeMessage.contains("foreign key constraint")) {
-          message = "Cannot delete or update due to existing references";
+          message = "无法删除或更新，存在关联数据引用";
         }
       }
     }
@@ -142,15 +141,15 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NoHandlerFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public Result<Void> handleNoHandlerFoundException(NoHandlerFoundException ex) {
-    log.warn("No handler found: {}", ex.getMessage());
-    return Result.error(404, "Endpoint not found");
+    log.warn("接口不存在: {}", ex.getMessage());
+    return Result.error(404, "请求的接口不存在");
   }
 
   /** 处理非法参数异常 */
   @ExceptionHandler(IllegalArgumentException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public Result<Void> handleIllegalArgumentException(IllegalArgumentException ex) {
-    log.warn("Illegal argument: {}", ex.getMessage());
+    log.warn("非法参数: {}", ex.getMessage());
     return Result.error(400, ex.getMessage());
   }
 
@@ -158,7 +157,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public Result<Void> handleGenericException(Exception ex) {
-    log.error("Unexpected error occurred", ex);
-    return Result.error(500, "Internal server error");
+    log.error("服务器内部错误", ex);
+    return Result.error(500, "服务器内部错误");
   }
 }

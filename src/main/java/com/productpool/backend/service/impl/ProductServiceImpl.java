@@ -5,6 +5,7 @@ import com.productpool.backend.dto.ProductDTO;
 import com.productpool.backend.dto.ProductQueryDTO;
 import com.productpool.backend.dto.ProductUpdateDTO;
 import com.productpool.backend.entity.Benchmark;
+import com.productpool.backend.entity.ConfigurationType;
 import com.productpool.backend.entity.Product;
 import com.productpool.backend.entity.StrategyType;
 import com.productpool.backend.exception.DuplicateResourceException;
@@ -16,6 +17,7 @@ import com.productpool.backend.repository.StrategyTypeRepository;
 import com.productpool.backend.service.ProductService;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +38,23 @@ public class ProductServiceImpl implements ProductService {
   private final StrategyTypeRepository strategyTypeRepository;
   private final BenchmarkRepository benchmarkRepository;
   private final ConfigurationTypeRepository configurationTypeRepository;
+
+  /** 批量填充 DTO 列表的策略类型名称（避免 N+1 查询） */
+  private List<ProductDTO> enrichWithStrategyTypeNames(List<ProductDTO> dtos) {
+    if (dtos.isEmpty()) return dtos;
+    List<Long> stIds =
+        dtos.stream()
+            .map(ProductDTO::getStrategyTypeId)
+            .filter(id -> id != null)
+            .distinct()
+            .collect(Collectors.toList());
+    if (stIds.isEmpty()) return dtos;
+    Map<Long, String> nameMap =
+        strategyTypeRepository.findAllById(stIds).stream()
+            .collect(Collectors.toMap(StrategyType::getId, StrategyType::getName));
+    dtos.forEach(dto -> dto.setStrategyTypeName(nameMap.get(dto.getStrategyTypeId())));
+    return dtos;
+  }
 
   /** 填充单个 DTO 的策略类型名称 */
   private ProductDTO enrichSingleWithStrategyTypeName(ProductDTO dto) {
@@ -72,24 +91,35 @@ public class ProductServiceImpl implements ProductService {
       return strategyTypes.stream().map(StrategyType::getId).collect(Collectors.toList());
     }
 
-    // 4. 指定了配置分类ID：查该分类下所有业绩对标，再查所有策略类型
+    // 4. 指定了配置分类ID：先判断是大分类还是子分类，再级联查出所有策略类型
     if (queryDTO.getConfigurationTypeId() != null) {
-      List<Benchmark> benchmarks =
-          benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAscUpdatedAtAsc(
+      List<Long> ctIds = new java.util.ArrayList<>();
+      ctIds.add(queryDTO.getConfigurationTypeId());
+
+      // 如果是大分类，查出所有子分类ID一并纳入
+      List<ConfigurationType> children =
+          configurationTypeRepository.findByParentIdOrderBySortOrderAscUpdatedAtAsc(
               queryDTO.getConfigurationTypeId());
-      if (benchmarks.isEmpty()) {
-        return Collections.emptyList();
+      if (!children.isEmpty()) {
+        ctIds.addAll(children.stream().map(ConfigurationType::getId).collect(Collectors.toList()));
       }
-      List<Long> benchmarkIds =
-          benchmarks.stream().map(Benchmark::getId).collect(Collectors.toList());
-      List<StrategyType> strategyTypes =
-          strategyTypeRepository.findAll().stream()
-              .filter(st -> benchmarkIds.contains(st.getBenchmarkId()))
-              .collect(Collectors.toList());
-      if (strategyTypes.isEmpty()) {
-        return Collections.emptyList();
+
+      // 逐个分类查询关联的业绩对标，汇总 strategyTypeIds
+      List<Long> strategyTypeIds = new java.util.ArrayList<>();
+      for (Long ctId : ctIds) {
+        List<Benchmark> benchmarks =
+            benchmarkRepository.findByConfigurationTypeIdOrderBySortOrderAscUpdatedAtAsc(ctId);
+        for (Benchmark bm : benchmarks) {
+          List<StrategyType> sts =
+              strategyTypeRepository.findByBenchmarkIdOrderBySortOrderAscUpdatedAtAsc(bm.getId());
+          for (StrategyType st : sts) {
+            if (!strategyTypeIds.contains(st.getId())) {
+              strategyTypeIds.add(st.getId());
+            }
+          }
+        }
       }
-      return strategyTypes.stream().map(StrategyType::getId).collect(Collectors.toList());
+      return strategyTypeIds.isEmpty() ? Collections.emptyList() : strategyTypeIds;
     }
 
     // 5. 未指定任何筛选条件：返回 null，不过滤
@@ -159,7 +189,11 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<ProductDTO> findAll(Pageable pageable) {
     Page<Product> entities = productRepository.findAll(pageable);
-    return entities.map(entity -> enrichSingleWithStrategyTypeName(ProductDTO.fromEntity(entity)));
+    List<ProductDTO> dtos =
+        entities.stream().map(ProductDTO::fromEntity).collect(Collectors.toList());
+    enrichWithStrategyTypeNames(dtos);
+    return new org.springframework.data.domain.PageImpl<>(
+        dtos, entities.getPageable(), entities.getTotalElements());
   }
 
   /**
@@ -183,7 +217,11 @@ public class ProductServiceImpl implements ProductService {
     Page<Product> entities =
         productRepository.findByQuery(
             queryDTO.getName(), queryDTO.getCode(), null, resolvedStrategyTypeIds, pageable);
-    return entities.map(entity -> enrichSingleWithStrategyTypeName(ProductDTO.fromEntity(entity)));
+    List<ProductDTO> dtos =
+        entities.stream().map(ProductDTO::fromEntity).collect(Collectors.toList());
+    enrichWithStrategyTypeNames(dtos);
+    return new org.springframework.data.domain.PageImpl<>(
+        dtos, entities.getPageable(), entities.getTotalElements());
   }
 
   /**
@@ -244,6 +282,10 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<ProductDTO> findByStrategyTypeId(Long strategyTypeId, Pageable pageable) {
     Page<Product> entities = productRepository.findByStrategyTypeId(strategyTypeId, pageable);
-    return entities.map(entity -> enrichSingleWithStrategyTypeName(ProductDTO.fromEntity(entity)));
+    List<ProductDTO> dtos =
+        entities.stream().map(ProductDTO::fromEntity).collect(Collectors.toList());
+    enrichWithStrategyTypeNames(dtos);
+    return new org.springframework.data.domain.PageImpl<>(
+        dtos, entities.getPageable(), entities.getTotalElements());
   }
 }
